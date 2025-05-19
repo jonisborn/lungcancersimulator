@@ -16,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update parameter display values
     updateAllDisplayValues();
-    
-    // Set up clinical form listeners
-    setupClinicalFormListeners();
 });
 
 /**
@@ -33,9 +30,6 @@ function setupEventListeners() {
     
     // Reset parameters button
     document.getElementById('reset-params').addEventListener('click', resetParameters);
-    
-    // Save profile button
-    document.getElementById('save-profile').addEventListener('click', savePatientProfile);
     
     // Toggle log scale button
     document.getElementById('toggle-log-scale').addEventListener('click', toggleLogScale);
