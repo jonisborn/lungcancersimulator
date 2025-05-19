@@ -45,10 +45,18 @@ function setupSliderListeners() {
     setupSlider('sensitive-cells', 'sensitive-value');
     setupSlider('resistant-cells', 'resistant-value');
     setupSlider('stem-cells', 'stem-value');
+    setupSlider('immune-cells', 'immune-value');
     
-    // Treatment parameter sliders
+    // Treatment protocol sliders
     setupSlider('drug-strength', 'drug-strength-value', 2);
     setupSlider('drug-decay', 'drug-decay-value', 2);
+    setupSlider('dose-frequency', 'dose-frequency-value', 0);
+    setupSlider('dose-intensity', 'dose-intensity-value', 1);
+    
+    // Patient parameter sliders
+    setupSlider('patient-age', 'patient-age-value', 0);
+    setupSlider('patient-metabolism', 'patient-metabolism-value', 1);
+    setupSlider('patient-immune-status', 'patient-immune-status-value', 1);
     setupSlider('immune-strength', 'immune-strength-value', 2);
     
     // Evolutionary parameter sliders
@@ -146,10 +154,19 @@ function resetParameters() {
     document.getElementById('sensitive-cells').value = 100;
     document.getElementById('resistant-cells').value = 10;
     document.getElementById('stem-cells').value = 5;
+    document.getElementById('immune-cells').value = 50;
     
-    // Reset treatment parameters
+    // Reset treatment protocol
+    document.getElementById('treatment-protocol').value = 'CONTINUOUS';
     document.getElementById('drug-strength').value = 0.8;
     document.getElementById('drug-decay').value = 0.1;
+    document.getElementById('dose-frequency').value = 7;
+    document.getElementById('dose-intensity').value = 1.0;
+    
+    // Reset patient parameters
+    document.getElementById('patient-age').value = 55;
+    document.getElementById('patient-metabolism').value = 1.0;
+    document.getElementById('patient-immune-status').value = 1.0;
     document.getElementById('immune-strength').value = 0.2;
     
     // Reset evolutionary parameters
@@ -159,16 +176,19 @@ function resetParameters() {
     
     // Reset game matrix to defaults
     const defaultMatrix = [
-        [1.0, 0.7, 0.8],
-        [0.9, 0.6, 0.7],
-        [1.1, 0.8, 1.0]
+        [1.0, 0.7, 0.8, 0.3],
+        [0.9, 0.6, 0.7, 0.4],
+        [1.1, 0.8, 1.0, 0.2],
+        [0.0, 0.0, 0.0, 0.0]
     ];
     
     const matrixInputs = document.querySelectorAll('.matrix-input');
     matrixInputs.forEach(input => {
         const row = parseInt(input.dataset.row);
         const col = parseInt(input.dataset.col);
-        input.value = defaultMatrix[row][col];
+        if (row < defaultMatrix.length && col < defaultMatrix[0].length) {
+            input.value = defaultMatrix[row][col];
+        }
     });
     
     // Update all display values
@@ -184,10 +204,19 @@ function collectParameters() {
     const sensitiveCells = parseInt(document.getElementById('sensitive-cells').value);
     const resistantCells = parseInt(document.getElementById('resistant-cells').value);
     const stemCells = parseInt(document.getElementById('stem-cells').value);
+    const immuneCells = parseInt(document.getElementById('immune-cells').value);
     
-    // Get treatment parameters
+    // Get treatment protocol parameters
+    const treatmentProtocol = document.getElementById('treatment-protocol').value;
     const drugStrength = parseFloat(document.getElementById('drug-strength').value);
     const drugDecay = parseFloat(document.getElementById('drug-decay').value);
+    const doseFrequency = parseInt(document.getElementById('dose-frequency').value);
+    const doseIntensity = parseFloat(document.getElementById('dose-intensity').value);
+    
+    // Get patient parameters
+    const patientAge = parseInt(document.getElementById('patient-age').value);
+    const patientMetabolism = parseFloat(document.getElementById('patient-metabolism').value);
+    const patientImmuneStatus = parseFloat(document.getElementById('patient-immune-status').value);
     const immuneStrength = parseFloat(document.getElementById('immune-strength').value);
     
     // Get evolutionary parameters
@@ -196,22 +225,39 @@ function collectParameters() {
     const timeSteps = parseInt(document.getElementById('time-steps').value);
     
     // Get game matrix values
-    const gameMatrix = [[], [], []];
+    const gameMatrix = [[], [], [], []];
     const matrixInputs = document.querySelectorAll('.matrix-input');
     matrixInputs.forEach(input => {
         const row = parseInt(input.dataset.row);
         const col = parseInt(input.dataset.col);
+        if (!gameMatrix[row]) {
+            gameMatrix[row] = [];
+        }
         gameMatrix[row][col] = parseFloat(input.value);
     });
     
     // Return complete parameter set
     return {
+        // Cell populations
         sensitive_cells: sensitiveCells,
         resistant_cells: resistantCells,
         stem_cells: stemCells,
+        immune_cells: immuneCells,
+        
+        // Treatment protocol
+        treatment_protocol: treatmentProtocol,
         drug_strength: drugStrength,
         drug_decay: drugDecay,
+        dose_frequency: doseFrequency,
+        dose_intensity: doseIntensity,
+        
+        // Patient parameters
+        patient_age: patientAge,
+        patient_metabolism: patientMetabolism,
+        patient_immune_status: patientImmuneStatus,
         immune_strength: immuneStrength,
+        
+        // Evolutionary parameters
         mutation_rate: mutationRate,
         chaos_level: chaosLevel,
         time_steps: timeSteps,
@@ -246,13 +292,14 @@ function runSimulation() {
     })
     .then(data => {
         // Store simulation data globally
-        window.lastSimulationData = data;
+        window.lastSimulationData = data.simulation_data;
+        window.clinicalSummary = data.clinical_summary;
         
         // Update charts with simulation results
-        updateCharts(data);
+        updateCharts(data.simulation_data);
         
         // Calculate and display summary statistics
-        displayResults(data);
+        displayResults(data.simulation_data, data.clinical_summary);
         
         // Hide spinner, show results
         document.getElementById('spinner-container').classList.add('d-none');
@@ -276,17 +323,23 @@ function runSimulation() {
 /**
  * Display simulation results and summary statistics
  * @param {Object} data - Simulation results data
+ * @param {Object} clinical - Clinical summary data
  */
-function displayResults(data) {
+function displayResults(data, clinical) {
     // Calculate final values
     const finalDay = data.time_points.length - 1;
     const finalTotal = data.total[finalDay];
     const finalSensitive = data.sensitive[finalDay];
     const finalResistant = data.resistant[finalDay];
     const finalStemcell = data.stemcell[finalDay];
+    const finalImmune = data.immunecell ? data.immunecell[finalDay] : 0;
     
-    // Determine if cancer was eradicated
-    const eradicated = finalTotal < 1.0;
+    // Get clinical outcomes
+    const eradicated = clinical.eradicated;
+    const clinicalResponse = clinical.clinical_response;
+    const survivalProbability = clinical.survival_probability;
+    const medianSurvivalMonths = clinical.median_survival_months;
+    const tumorVolume = clinical.tumor_volume_mm3;
     
     // Calculate composition percentages
     let sensitivePercent = 0;
@@ -309,26 +362,22 @@ function displayResults(data) {
         }
     }
     
-    // Determine dominant cell type
-    let dominantType = "None";
-    if (!eradicated) {
-        if (finalSensitive > finalResistant && finalSensitive > finalStemcell) {
-            dominantType = "Sensitive";
-        } else if (finalResistant > finalSensitive && finalResistant > finalStemcell) {
-            dominantType = "Resistant";
-        } else {
-            dominantType = "Stem Cell";
-        }
-    }
+    // Get dominant cell type from clinical data
+    const dominantType = clinical.dominant_type;
     
-    // Construct results HTML
+    // Create response CSS class based on clinical outcome
+    const responseClass = clinicalResponse === "Complete Response (CR)" ? "success" : 
+                        clinicalResponse === "Partial Response (PR)" ? "info" :
+                        clinicalResponse === "Stable Disease (SD)" ? "warning" : "danger";
+    
+    // Construct results HTML with clinical information
     let resultsHTML = `
         <div class="row">
             <div class="col-md-6">
-                <div class="result-stat eradicated-${eradicated}">
-                    <h5>Treatment Outcome:</h5>
+                <div class="alert alert-${responseClass}">
+                    <h5>Clinical Response:</h5>
                     <p class="fs-5 fw-bold mb-0">
-                        ${eradicated ? 'Cancer Eradicated!' : 'Cancer Persists'}
+                        ${clinicalResponse}
                     </p>
                 </div>
                 
@@ -358,11 +407,36 @@ function displayResults(data) {
                             <div class="col-4">Resistant</div>
                             <div class="col-4">Stem Cells</div>
                         </div>
+                        <p class="small text-muted mt-2">
+                            Tumor volume: ${tumorVolume.toFixed(2)} mm³
+                        </p>
                     </div>
                 </div>
             </div>
             
             <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Survival Statistics</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <p class="mb-1">Survival Probability:</p>
+                                <p class="fs-5 fw-bold">${(survivalProbability * 100).toFixed(1)}%</p>
+                            </div>
+                            <div class="col-6">
+                                <p class="mb-1">Median Survival:</p>
+                                <p class="fs-5 fw-bold">${medianSurvivalMonths.toFixed(1)} months</p>
+                            </div>
+                        </div>
+                        <div class="progress mt-2" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: ${survivalProbability * 100}%" 
+                                aria-valuenow="${survivalProbability * 100}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="card mb-3">
                     <div class="card-body">
                         <h5 class="card-title">Growth Rate</h5>
@@ -377,15 +451,41 @@ function displayResults(data) {
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Dominant Cell Type</h5>
-                        <p class="fs-5 fw-bold">${dominantType}</p>
+                        <p class="fs-5 fw-bold">${dominantType.charAt(0).toUpperCase() + dominantType.slice(1)}</p>
                         <p class="mb-0 small text-muted">
                             ${
-                                dominantType === "Sensitive" ? "Responds well to treatment but proliferates quickly" :
-                                dominantType === "Resistant" ? "Resistant to treatment but slower growing" :
-                                dominantType === "Stem Cell" ? "Highly resilient with self-renewal capacity" :
+                                dominantType === "sensitive" ? "Responds well to treatment but proliferates quickly" :
+                                dominantType === "resistant" ? "Resistant to treatment but slower growing" :
+                                dominantType === "stemcell" ? "Highly resilient with self-renewal capacity" :
                                 "No dominant cell type detected"
                             }
                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Treatment Protocol Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p class="mb-1">Protocol:</p>
+                                <p class="fw-bold">${clinical.treatment_protocol}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1">Patient Age:</p>
+                                <p class="fw-bold">${clinical.patient_profile.age} years</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-1">Immune Status:</p>
+                                <p class="fw-bold">${clinical.patient_profile.immune_status.toFixed(1)}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
