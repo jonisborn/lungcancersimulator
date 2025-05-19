@@ -522,113 +522,83 @@ function runSimulation() {
  * @param {Object} clinical - Clinical summary data
  */
 function displayResults(data, clinical) {
-    // Calculate final values
-    const finalDay = data.time_points.length - 1;
-    const finalTotal = data.total[finalDay];
-    const finalSensitive = data.sensitive[finalDay];
-    const finalResistant = data.resistant[finalDay];
-    const finalStemcell = data.stemcell[finalDay];
-    const finalImmune = data.immunecell ? data.immunecell[finalDay] : 0;
-    
-    // Get clinical outcomes
-    const eradicated = clinical.eradicated;
-    const clinicalResponse = clinical.clinical_response;
-    const survivalProbability = clinical.survival_probability;
-    const medianSurvivalMonths = clinical.median_survival_months;
-    const tumorVolume = clinical.tumor_volume_mm3;
-    
-    // Calculate composition percentages
-    let sensitivePercent = 0;
-    let resistantPercent = 0;
-    let stemcellPercent = 0;
-    
-    if (finalTotal > 0) {
-        sensitivePercent = (finalSensitive / finalTotal * 100).toFixed(1);
-        resistantPercent = (finalResistant / finalTotal * 100).toFixed(1);
-        stemcellPercent = (finalStemcell / finalTotal * 100).toFixed(1);
-    }
-    
-    // Create HTML content for results
-    const resultsContainer = document.getElementById('results-container');
-    
-    // Clear previous results
-    resultsContainer.innerHTML = '';
-    
-    // Create results summary
-    const resultsHTML = `
-        <div class="row">
-            <div class="col-md-6">
-                <h5>Final Cell Counts</h5>
-                <p>Total: <strong>${finalTotal.toFixed(0)}</strong> cells</p>
-                <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Sensitive
-                        <span class="badge bg-primary rounded-pill">${finalSensitive.toFixed(0)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Resistant
-                        <span class="badge bg-danger rounded-pill">${finalResistant.toFixed(0)}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Stem Cells
-                        <span class="badge bg-warning text-dark rounded-pill">${finalStemcell.toFixed(0)}</span>
-                    </li>
-                </ul>
-                <p>Tumor Volume: <strong>${tumorVolume.toFixed(2)}</strong> mm³</p>
-            </div>
-            <div class="col-md-6">
-                <h5>Clinical Outcome</h5>
-                <p>Clinical Response: <strong>${clinicalResponse}</strong></p>
-                <p>Survival Probability: <strong>${(survivalProbability * 100).toFixed(1)}%</strong></p>
-                <div class="progress mb-3">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: ${survivalProbability * 100}%" 
-                        aria-valuenow="${survivalProbability * 100}" aria-valuemin="0" aria-valuemax="100"></div>
+    try {
+        // Calculate final values
+        const finalDay = data.time_points.length - 1;
+        const finalTotal = data.total[finalDay];
+        const finalSensitive = data.sensitive[finalDay];
+        const finalResistant = data.resistant[finalDay];
+        const finalStemcell = data.stemcell[finalDay];
+        
+        // Get clinical outcomes
+        const eradicated = clinical.eradicated || false;
+        const clinicalResponse = clinical.clinical_response || "Not Available";
+        const survivalProbability = clinical.survival_probability || 0;
+        const medianSurvivalMonths = clinical.median_survival_months || 0;
+        const tumorVolume = clinical.tumor_volume_mm3 || 0;
+        
+        // Get results container element
+        const resultsContainer = document.getElementById('results-container');
+        if (!resultsContainer) {
+            console.error("Results container not found");
+            return;
+        }
+        
+        // Create HTML content
+        let html = '<div class="row">';
+        
+        // Cell counts section
+        html += '<div class="col-md-6">';
+        html += '<h5>Final Cell Counts</h5>';
+        html += `<p>Total: <strong>${finalTotal.toFixed(0)}</strong> cells</p>`;
+        html += '<ul class="list-group mb-3">';
+        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Sensitive
+                    <span class="badge bg-primary rounded-pill">${finalSensitive.toFixed(0)}</span>
+                </li>`;
+        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Resistant
+                    <span class="badge bg-danger rounded-pill">${finalResistant.toFixed(0)}</span>
+                </li>`;
+        html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    Stem Cells
+                    <span class="badge bg-warning text-dark rounded-pill">${finalStemcell.toFixed(0)}</span>
+                </li>`;
+        html += '</ul>';
+        html += `<p>Tumor Volume: <strong>${tumorVolume.toFixed(2)}</strong> mm³</p>`;
+        html += '</div>';
+        
+        // Clinical outcomes section
+        html += '<div class="col-md-6">';
+        html += '<h5>Clinical Outcome</h5>';
+        html += `<p>Response: <strong>${clinicalResponse}</strong></p>`;
+        html += `<p>Survival Probability: <strong>${(survivalProbability * 100).toFixed(1)}%</strong></p>`;
+        html += '<div class="progress mb-3">';
+        html += `<div class="progress-bar bg-success" role="progressbar" 
+                    style="width: ${survivalProbability * 100}%" 
+                    aria-valuenow="${survivalProbability * 100}" aria-valuemin="0" aria-valuemax="100"></div>`;
+        html += '</div>';
+        html += `<p>Projected Survival: <strong>${medianSurvivalMonths.toFixed(1)}</strong> months</p>`;
+        html += `<p>Tumor Eradicated: <strong>${eradicated ? 'Yes' : 'No'}</strong></p>`;
+        html += '</div>';
+        
+        html += '</div>'; // Close row
+        
+        // Update the container
+        resultsContainer.innerHTML = html;
+        
+    } catch (error) {
+        console.error("Error displaying results:", error);
+        const resultsContainer = document.getElementById('results-container');
+        if (resultsContainer) {
+            resultsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5>Display Error</h5>
+                    <p>${error.message}</p>
                 </div>
-                <p>Projected Survival: <strong>${medianSurvivalMonths.toFixed(1)}</strong> months</p>
-                <p>Tumor Eradicated: <strong>${eradicated ? 'Yes' : 'No'}</strong></p>
-            </div>
-        </div>
-    `;
-    
-    // Add the results to the container
-    resultsContainer.innerHTML = resultsHTML;
-    
-    // Calculate growth rate over last 10 days
-    let growthRate = 0;
-    if (finalDay >= 10) {
-        const tenDaysAgo = data.total[finalDay - 10];
-        if (tenDaysAgo > 0) {
-            // Daily growth rate as percentage
-            growthRate = (Math.pow(finalTotal / tenDaysAgo, 1/10) - 1) * 100;
+            `;
         }
     }
-    
-    // Get dominant cell type from clinical data
-    const dominantType = clinical.dominant_type;
-    
-    // Create response CSS class based on clinical outcome
-    const responseClass = clinicalResponse === "Complete Response (CR)" ? "success" : 
-                        clinicalResponse === "Partial Response (PR)" ? "info" :
-                        clinicalResponse === "Stable Disease (SD)" ? "warning" : "danger";
-    
-    // Construct results HTML with clinical information
-    let resultsHTML = `
-        <div class="row">
-            <div class="col-md-6">
-                <div class="alert alert-${responseClass}">
-                    <h5>Clinical Response:</h5>
-                    <p class="fs-5 fw-bold mb-0">
-                        ${clinicalResponse}
-                    </p>
-                </div>
-                
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Final Cell Count</h5>
-                        <p class="fs-4 fw-bold">${finalTotal.toLocaleString('en-US', {maximumFractionDigits: 0})}</p>
-                        <div class="progress mb-3" style="height: 25px;">
-                            <div class="progress-bar bg-primary" role="progressbar" 
-                                style="width: ${sensitivePercent}%" 
                                 aria-valuenow="${sensitivePercent}" aria-valuemin="0" aria-valuemax="100">
                                 ${sensitivePercent}%
                             </div>
