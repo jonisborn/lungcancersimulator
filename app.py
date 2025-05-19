@@ -95,16 +95,25 @@ def simulate():
         clinical_summary_serializable = make_json_serializable(clinical_summary)
         
         # Final consistency checks - ensure the results are medically consistent
+        
+        # If tumor is eradicated, it must be complete response with good survival
         if clinical_summary_serializable.get('eradicated') == True:
-            # If tumor is eradicated, it must be complete response with good survival
             clinical_summary_serializable['clinical_response'] = "Complete Response (CR)"
             clinical_summary_serializable['survival_probability'] = 0.95
             clinical_summary_serializable['median_survival_months'] = max(clinical_summary_serializable.get('median_survival_months', 60), 60)
-        
-        # For progressive disease, survival can't be too high
+            
+        # For progressive disease, tumor cannot be eradicated
         if clinical_summary_serializable.get('clinical_response') == "Progressive Disease (PD)":
+            clinical_summary_serializable['eradicated'] = False
             clinical_summary_serializable['survival_probability'] = min(clinical_summary_serializable.get('survival_probability', 0.3), 0.3)
             clinical_summary_serializable['median_survival_months'] = min(clinical_summary_serializable.get('median_survival_months', 12), 12)
+            
+        # Double-check for contradictory states
+        if clinical_summary_serializable.get('eradicated') == True and clinical_summary_serializable.get('clinical_response') != "Complete Response (CR)":
+            # Always prioritize eradication status as the source of truth
+            clinical_summary_serializable['clinical_response'] = "Complete Response (CR)"
+            clinical_summary_serializable['survival_probability'] = 0.95
+            clinical_summary_serializable['median_survival_months'] = max(clinical_summary_serializable.get('median_survival_months', 60), 60)
         
         # Combine results and clinical information
         response = {
