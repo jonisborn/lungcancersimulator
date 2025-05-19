@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancer Evolution Simulator</title>
+    
+    <!-- Bootstrap CSS (Replit Dark Theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container mt-4">
+        <header class="text-center mb-4">
+            <h1 class="display-4">Cancer Evolution Simulator</h1>
+            <p class="lead">Modeling evolutionary game dynamics, drug interactions, and immune response</p>
+        </header>
+
+        <div class="row">
+            <!-- Control Panel -->
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Simulation Parameters</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="simulation-form">
+                            <h5 class="mb-3">Initial Cell Populations</h5>
+                            
+                            <div class="mb-3">
+                                <label for="sensitive-cells" class="form-label">
+                                    Drug-sensitive Cells: <span id="sensitive-value">100</span>
+                                </label>
+                                <input type="range" class="form-range" id="sensitive-cells" min="0" max="1000" value="100" step="10">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="resistant-cells" class="form-label">
+                                    Drug-resistant Cells: <span id="resistant-value">10</span>
+                                </label>
+                                <input type="range" class="form-range" id="resistant-cells" min="0" max="500" value="10" step="5">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="stem-cells" class="form-label">
+                                    Cancer Stem Cells: <span id="stem-value">5</span>
+                                </label>
+                                <input type="range" class="form-range" id="stem-cells" min="0" max="100" value="5" step="1">
+                            </div>
+                            
+                            <h5 class="mb-3 mt-4">Treatment Parameters</h5>
+                            
+                            <div class="mb-3">
+                                <label for="drug-strength" class="form-label">
+                                    Drug Strength: <span id="drug-strength-value">0.8</span>
+                                </label>
+                                <input type="range" class="form-range" id="drug-strength" min="0" max="1" value="0.8" step="0.05">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="drug-decay" class="form-label">
+                                    Drug Decay Rate: <span id="drug-decay-value">0.1</span>
+                                </label>
+                                <input type="range" class="form-range" id="drug-decay" min="0" max="0.5" value="0.1" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="immune-strength" class="form-label">
+                                    Immune Response: <span id="immune-strength-value">0.2</span>
+                                </label>
+                                <input type="range" class="form-range" id="immune-strength" min="0" max="1" value="0.2" step="0.05">
+                            </div>
+                            
+                            <h5 class="mb-3 mt-4">Evolutionary Parameters</h5>
+                            
+                            <div class="mb-3">
+                                <label for="mutation-rate" class="form-label">
+                                    Mutation Rate: <span id="mutation-rate-value">0.01</span>
+                                </label>
+                                <input type="range" class="form-range" id="mutation-rate" min="0" max="0.1" value="0.01" step="0.005">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="chaos-level" class="form-label">
+                                    Chaos Level: <span id="chaos-level-value">0.05</span>
+                                </label>
+                                <input type="range" class="form-range" id="chaos-level" min="0" max="0.3" value="0.05" step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="time-steps" class="form-label">
+                                    Simulation Time (days): <span id="time-steps-value">100</span>
+                                </label>
+                                <input type="range" class="form-range" id="time-steps" min="10" max="500" value="100" step="10">
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" id="run-simulation" class="btn btn-primary btn-lg">Run Simulation</button>
+                                <button type="button" id="reset-params" class="btn btn-secondary">Reset Parameters</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Game Matrix Card (Collapsible for advanced users) -->
+                <div class="card mb-4">
+                    <div class="card-header" data-bs-toggle="collapse" data-bs-target="#gameMatrixCollapse" aria-expanded="false">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Advanced: Game Matrix</h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div id="gameMatrixCollapse" class="collapse">
+                        <div class="card-body">
+                            <p class="text-muted">Modify the evolutionary game matrix that determines fitness interactions between cell types.</p>
+                            
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Cell Types</th>
+                                        <th scope="col">Sensitive</th>
+                                        <th scope="col">Resistant</th>
+                                        <th scope="col">Stem Cell</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Sensitive</th>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="1.0" class="form-control form-control-sm matrix-input" data-row="0" data-col="0"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.7" class="form-control form-control-sm matrix-input" data-row="0" data-col="1"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.8" class="form-control form-control-sm matrix-input" data-row="0" data-col="2"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Resistant</th>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.9" class="form-control form-control-sm matrix-input" data-row="1" data-col="0"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.6" class="form-control form-control-sm matrix-input" data-row="1" data-col="1"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.7" class="form-control form-control-sm matrix-input" data-row="1" data-col="2"></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Stem Cell</th>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="1.1" class="form-control form-control-sm matrix-input" data-row="2" data-col="0"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="0.8" class="form-control form-control-sm matrix-input" data-row="2" data-col="1"></td>
+                                        <td><input type="number" step="0.1" min="0" max="2" value="1.0" class="form-control form-control-sm matrix-input" data-row="2" data-col="2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="text-muted small">
+                                <strong>Note:</strong> Each value represents the fitness benefit of row cell type when interacting with column cell type.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualization Panel -->
+            <div class="col-lg-8">
+                <div class="row">
+                    <!-- Population Chart -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4>Cell Population Dynamics</h4>
+                                <div>
+                                    <button id="toggle-log-scale" class="btn btn-sm btn-outline-secondary">Toggle Log Scale</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="population-chart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Drug Level Chart -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Drug Concentration</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="drug-chart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fitness Chart -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Fitness Values</h4>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="fitness-chart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Simulation Results Card -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Simulation Results</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="results-container">
+                                    <div class="alert alert-info">
+                                        Run the simulation to see results.
+                                    </div>
+                                </div>
+                                
+                                <div id="spinner-container" class="text-center d-none">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Running simulation...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Cards -->
+        <div class="row mt-3 mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>About Cell Types</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <span class="cell-indicator sensitive-color me-2"></span>
+                                    <h6 class="mb-0">Sensitive Cells</h6>
+                                </div>
+                                <p class="text-muted small mt-1">
+                                    Cancer cells that respond well to treatment but proliferate quickly.
+                                </p>
+                            </li>
+                            <li class="mb-3">
+                                <div class="d-flex align-items-center">
+                                    <span class="cell-indicator resistant-color me-2"></span>
+                                    <h6 class="mb-0">Resistant Cells</h6>
+                                </div>
+                                <p class="text-muted small mt-1">
+                                    Cancer cells that have evolved resistance to treatment but grow more slowly.
+                                </p>
+                            </li>
+                            <li>
+                                <div class="d-flex align-items-center">
+                                    <span class="cell-indicator stemcell-color me-2"></span>
+                                    <h6 class="mb-0">Cancer Stem Cells</h6>
+                                </div>
+                                <p class="text-muted small mt-1">
+                                    Highly resilient cells that can self-renew and regenerate tumor mass.
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>Evolutionary Dynamics</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>This simulation is based on evolutionary game theory applied to cancer:</p>
+                        <ul>
+                            <li>Cells compete for resources within the tumor</li>
+                            <li>Fitness is determined by interactions between cell types</li>
+                            <li>Mutations allow cells to change type over time</li>
+                            <li>Drug pressure creates selection for resistant phenotypes</li>
+                            <li>Some randomness (chaos) models unpredictable biological events</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>Treatment Strategies</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Explore different treatment approaches:</p>
+                        <ul>
+                            <li><strong>Maximum Tolerated Dose:</strong> High drug strength, high decay</li>
+                            <li><strong>Metronomic Therapy:</strong> Moderate strength, low decay</li>
+                            <li><strong>Adaptive Therapy:</strong> Adjust drug based on response</li>
+                            <li><strong>Immune Support:</strong> Increase immune strength with drug</li>
+                        </ul>
+                        <p class="text-muted small">Challenge: Can you find parameters that lead to complete tumor eradication?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/chart-config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
