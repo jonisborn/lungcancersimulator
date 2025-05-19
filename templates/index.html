@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cancer Evolution Simulator</title>
+    <title>Clinical Cancer Evolution Simulator</title>
     
     <!-- Bootstrap CSS (Replit Dark Theme) -->
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
@@ -17,20 +17,119 @@
 <body>
     <div class="container mt-4">
         <header class="text-center mb-4">
-            <h1 class="display-4">Cancer Evolution Simulator</h1>
-            <p class="lead">Modeling evolutionary game dynamics, drug interactions, and immune response</p>
+            <h1 class="display-4">Clinical Cancer Evolution Simulator</h1>
+            <p class="lead">Treatment outcome prediction tool for oncology practice</p>
+            <div class="badge bg-info text-white mb-3">For Research and Educational Purposes Only</div>
         </header>
 
         <div class="row">
             <!-- Control Panel -->
             <div class="col-lg-4">
                 <div class="card mb-4">
-                    <div class="card-header">
-                        <h4>Simulation Parameters</h4>
+                    <div class="card-header bg-primary text-white">
+                        <h4>Patient Data</h4>
                     </div>
                     <div class="card-body">
                         <form id="simulation-form">
-                            <h5 class="mb-3">Initial Cell Populations</h5>
+                            <!-- Patient Demographics -->
+                            <h5 class="border-bottom pb-2 mb-3 text-primary">Patient Demographics</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="patient-age" class="form-label fw-bold">Patient Age</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="patient-age-direct" min="18" max="90" value="55">
+                                        <span class="input-group-text">years</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="patient-weight" class="form-label fw-bold">Patient Weight</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="patient-weight" min="30" max="200" value="70">
+                                        <span class="input-group-text">kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Gender</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="gender-male" value="male" checked>
+                                            <label class="form-check-label" for="gender-male">Male</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="gender-female" value="female">
+                                            <label class="form-check-label" for="gender-female">Female</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Performance Status (ECOG)</label>
+                                    <select class="form-select" id="performance-status">
+                                        <option value="0">0 - Fully active</option>
+                                        <option value="1" selected>1 - Restricted but ambulatory</option>
+                                        <option value="2">2 - Ambulatory, capable of self-care</option>
+                                        <option value="3">3 - Limited self-care</option>
+                                        <option value="4">4 - Completely disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Comorbidities</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="comorbidity-diabetes">
+                                        <label class="form-check-label" for="comorbidity-diabetes">Diabetes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="comorbidity-hypertension">
+                                        <label class="form-check-label" for="comorbidity-hypertension">Hypertension</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="comorbidity-cardiac">
+                                        <label class="form-check-label" for="comorbidity-cardiac">Cardiac Disease</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="patient-immune-status" class="form-label fw-bold">Immune Function</label>
+                                    <select class="form-select" id="immune-status-select">
+                                        <option value="1.2">Enhanced (1.2)</option>
+                                        <option value="1.0" selected>Normal (1.0)</option>
+                                        <option value="0.8">Slightly Compromised (0.8)</option>
+                                        <option value="0.6">Moderately Compromised (0.6)</option>
+                                    </select>
+                                    <input type="hidden" id="patient-immune-status" value="1.0">
+                                </div>
+                            </div>
+                            
+                            <!-- Disease Characteristics Section -->
+                            <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">Disease Characteristics</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tumor Type</label>
+                                    <select class="form-select" id="tumor-type">
+                                        <option value="breast">Breast Cancer</option>
+                                        <option value="colorectal" selected>Colorectal Cancer</option>
+                                        <option value="lung">Lung Cancer</option>
+                                        <option value="prostate">Prostate Cancer</option>
+                                        <option value="melanoma">Melanoma</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Disease Stage</label>
+                                    <select class="form-select" id="disease-stage">
+                                        <option value="1">Stage I</option>
+                                        <option value="2">Stage II</option>
+                                        <option value="3" selected>Stage III</option>
+                                        <option value="4">Stage IV</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">Initial Cell Populations</h5>
                             
                             <div class="mb-3">
                                 <label for="sensitive-cells" class="form-label">
@@ -149,6 +248,45 @@
                                     Simulation Time (days): <span id="time-steps-value">100</span>
                                 </label>
                                 <input type="range" class="form-range" id="time-steps" min="10" max="500" value="100" step="10">
+                            </div>
+                            
+                            <!-- Treatment Protocol Section -->
+                            <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">Treatment Protocol</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Treatment Regimen</label>
+                                    <select class="form-select" id="treatment-regimen">
+                                        <option value="folfox" selected>FOLFOX (5-FU, leucovorin, oxaliplatin)</option>
+                                        <option value="folfiri">FOLFIRI (5-FU, leucovorin, irinotecan)</option>
+                                        <option value="capox">CAPOX (capecitabine, oxaliplatin)</option>
+                                        <option value="custom">Custom Protocol</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="treatment-protocol" class="form-label fw-bold">Dosing Strategy</label>
+                                    <select class="form-select" id="treatment-protocol">
+                                        <option value="CONTINUOUS">Continuous (Maintenance)</option>
+                                        <option value="PULSED" selected>Pulsed (Standard)</option>
+                                        <option value="METRONOMIC">Metronomic (Low-dose, Frequent)</option>
+                                        <option value="ADAPTIVE">Adaptive (Tumor-guided)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="dose-frequency" class="form-label fw-bold">
+                                        Cycle Length (days): <span id="dose-frequency-value">14</span>
+                                    </label>
+                                    <input type="range" class="form-range" id="dose-frequency" min="1" max="28" value="14" step="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="dose-intensity" class="form-label fw-bold">
+                                        Dose Intensity (%): <span id="dose-intensity-value">100</span>
+                                    </label>
+                                    <input type="range" class="form-range" id="dose-intensity" min="0.5" max="1.2" value="1.0" step="0.05">
+                                </div>
                             </div>
                             
                             <div class="d-grid gap-2">

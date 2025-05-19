@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up UI event listeners
     setupEventListeners();
     
+    // Set up clinical interface listeners
+    setupClinicalFormListeners();
+    
     // Update parameter display values
     updateAllDisplayValues();
 });
@@ -41,6 +44,165 @@ function setupEventListeners() {
     
     // Setup sliders to update their value displays
     setupSliderListeners();
+}
+
+/**
+ * Set up listeners for the clinical interface elements
+ */
+function setupClinicalFormListeners() {
+    // Connect direct patient age input to the slider
+    const ageDirectInput = document.getElementById('patient-age-direct');
+    if (ageDirectInput) {
+        ageDirectInput.addEventListener('change', function() {
+            const patientAgeSlider = document.getElementById('patient-age');
+            if (patientAgeSlider) {
+                patientAgeSlider.value = this.value;
+                const ageValue = document.getElementById('patient-age-value');
+                if (ageValue) {
+                    ageValue.textContent = this.value;
+                }
+            }
+        });
+    }
+    
+    // Link immune status select to hidden input
+    const immuneStatusSelect = document.getElementById('immune-status-select');
+    if (immuneStatusSelect) {
+        immuneStatusSelect.addEventListener('change', function() {
+            const immuneStatusInput = document.getElementById('patient-immune-status');
+            if (immuneStatusInput) {
+                immuneStatusInput.value = this.value;
+            }
+        });
+    }
+    
+    // Treatment regimen presets
+    const treatmentRegimen = document.getElementById('treatment-regimen');
+    if (treatmentRegimen) {
+        treatmentRegimen.addEventListener('change', function() {
+            const regimen = this.value;
+            
+            switch(regimen) {
+                case 'folfox':
+                    // FOLFOX protocol: 5-FU, leucovorin, oxaliplatin
+                    setTreatmentParameters(0.85, 0.12, 14, 'PULSED');
+                    break;
+                    
+                case 'folfiri':
+                    // FOLFIRI protocol: 5-FU, leucovorin, irinotecan
+                    setTreatmentParameters(0.8, 0.15, 14, 'PULSED');
+                    break;
+                    
+                case 'capox':
+                    // CAPOX protocol: capecitabine, oxaliplatin
+                    setTreatmentParameters(0.75, 0.08, 21, 'CONTINUOUS');
+                    break;
+            }
+            
+            // Update all displays
+            updateAllDisplayValues();
+        });
+    }
+    
+    // Comorbidities affect patient metabolism and immune status
+    const diabetesCheckbox = document.getElementById('comorbidity-diabetes');
+    if (diabetesCheckbox) {
+        diabetesCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Diabetes affects metabolism
+                const metabolismInput = document.getElementById('patient-metabolism');
+                if (metabolismInput) {
+                    metabolismInput.value = 0.7;
+                    updateDisplayValue(
+                        metabolismInput,
+                        document.getElementById('patient-metabolism-value'),
+                        1
+                    );
+                }
+            }
+        });
+    }
+    
+    const cardiacCheckbox = document.getElementById('comorbidity-cardiac');
+    if (cardiacCheckbox) {
+        cardiacCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Cardiac disease affects immune status
+                const immuneStatusInput = document.getElementById('patient-immune-status');
+                if (immuneStatusInput) {
+                    immuneStatusInput.value = 0.8;
+                    updateDisplayValue(
+                        immuneStatusInput,
+                        document.getElementById('patient-immune-status-value'),
+                        1
+                    );
+                }
+            }
+        });
+    }
+    
+    // Disease stage affects initial cell populations
+    const diseaseStage = document.getElementById('disease-stage');
+    if (diseaseStage) {
+        diseaseStage.addEventListener('change', function() {
+            const stage = parseInt(this.value);
+            
+            switch(stage) {
+                case 1:
+                    setInitialPopulations(50, 2, 1);
+                    break;
+                case 2:
+                    setInitialPopulations(100, 5, 2);
+                    break;
+                case 3:
+                    setInitialPopulations(200, 20, 10);
+                    break;
+                case 4:
+                    setInitialPopulations(500, 100, 30);
+                    break;
+            }
+            
+            // Update displays
+            updateAllDisplayValues();
+        });
+    }
+}
+
+/**
+ * Helper function to set treatment parameters based on regimen
+ */
+function setTreatmentParameters(drugStrength, drugDecay, doseFrequency, protocol) {
+    const elements = {
+        'drug-strength': drugStrength,
+        'drug-decay': drugDecay,
+        'dose-frequency': doseFrequency,
+        'treatment-protocol': protocol
+    };
+    
+    for (const [id, value] of Object.entries(elements)) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = value;
+        }
+    }
+}
+
+/**
+ * Helper function to set initial cell populations based on disease stage
+ */
+function setInitialPopulations(sensitive, resistant, stem) {
+    const elements = {
+        'sensitive-cells': sensitive,
+        'resistant-cells': resistant,
+        'stem-cells': stem
+    };
+    
+    for (const [id, value] of Object.entries(elements)) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = value;
+        }
+    }
 }
 
 /**
