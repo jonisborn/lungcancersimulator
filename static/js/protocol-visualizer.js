@@ -114,12 +114,23 @@ function updateProtocolVisualization() {
     const protocolSelect = document.getElementById('treatment-protocol');
     const frequencySlider = document.getElementById('dose-frequency');
     const intensitySlider = document.getElementById('dose-intensity');
+    const protocolBadge = document.getElementById('protocol-badge');
     
     // Get selected values
     const selectedRegimen = regimenSelect.value;
     const selectedProtocol = protocolSelect.value;
     const cycleLength = parseInt(frequencySlider.value);
     const doseIntensity = parseFloat(intensitySlider.value);
+    
+    // Update protocol badge
+    if (protocolBadge) {
+        // Remove all previous protocol classes
+        protocolBadge.className = 'protocol-badge';
+        // Add new protocol-specific class
+        protocolBadge.classList.add(`protocol-badge-${selectedProtocol.toLowerCase()}`);
+        // Update badge text
+        protocolBadge.textContent = selectedProtocol;
+    }
     
     // Get base effects from regimen
     const baseEffects = protocolEffects.regimens[selectedRegimen] || protocolEffects.regimens['folfox'];
