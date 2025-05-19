@@ -546,22 +546,83 @@ class CancerSimulation:
         survival_probability = self.history['survival_probability'][-1] if self.history['survival_probability'] else 0
         
         # Calculate median survival time estimate (in months)
-        # This is a simple estimate based on final tumor burden and composition
-        median_survival_months = 0
+        # More clinically relevant prediction
+        
+        # Base survival by response type
         if eradicated:
-            median_survival_months = 60  # 5-year survival for complete response
-        else:
-            # Base survival inversely proportional to tumor burden
-            base_months = 36 * (1 - min(1, final_total / 5000))
+            median_survival_months = 120.0  # 10 years for complete response
+            survival_probability = 0.95     # 95% survival probability for complete response
+        elif clinical_response == "Partial Response (PR)":
+            median_survival_months = 60.0   # 5 years for partial response
+            # Adjust survival probability based on response
+            survival_probability = min(survival_probability * 1.5, 0.85)
+        elif clinical_response == "Stable Disease (SD)":
+            median_survival_months = 24.0   # 2 years for stable disease
+            # Keep survival probability as calculated
+        else:  # Progressive Disease (PD)
+            median_survival_months = 9.0    # 9 months for progressive disease
+            # Ensure survival probability is appropriately low
+            survival_probability = min(survival_probability, 0.3)
+        
+        # Disease stage dramatically affects survival
+        disease_stage = self.patient_data.get('disease_stage', 3)
+        if disease_stage == 1:
+            median_survival_months *= 3.0    # Much better with early disease 
+            survival_probability = min(survival_probability * 1.5, 0.95)
+        elif disease_stage == 2:
+            median_survival_months *= 2.0    # Better survival
+            survival_probability = min(survival_probability * 1.2, 0.9)
+        elif disease_stage == 4:
+            median_survival_months *= 0.5    # Much worse with metastatic disease
+            survival_probability *= 0.6      # Reduced survival probability
             
-            # Adjust based on composition (stem cells reduce survival)
-            stem_penalty = final_composition.get('stemcell', 0) * 12
-            resistant_penalty = final_composition.get('resistant', 0) * 6
+        # Tumor type affects survival
+        tumor_type = self.patient_data.get('tumor_type', 'colorectal')
+        if tumor_type == 'breast':
+            median_survival_months *= 1.5    # Better survival for breast cancer
+            survival_probability = min(survival_probability * 1.2, 0.95)
+        elif tumor_type == 'prostate':
+            median_survival_months *= 1.8    # Better survival for prostate cancer
+            survival_probability = min(survival_probability * 1.3, 0.95)
+        elif tumor_type == 'lung':
+            median_survival_months *= 0.7    # Worse prognosis for lung cancer
+            survival_probability *= 0.7
+        elif tumor_type == 'melanoma':
+            median_survival_months *= 0.8    # Worse for melanoma
+            survival_probability *= 0.8
             
-            # Patient factors
-            age_factor = max(0.5, 1 - ((self.patient.age - 50) / 100 if self.patient.age > 50 else 0))
+        # Performance status is critical
+        performance_status = self.patient_data.get('performance_status', 1)
+        if performance_status == 0:
+            median_survival_months *= 1.5    # Better with excellent performance status
+            survival_probability = min(survival_probability * 1.2, 0.95)
+        elif performance_status == 2:
+            median_survival_months *= 0.7    # Reduced with limited performance
+            survival_probability *= 0.8
+        elif performance_status >= 3:
+            median_survival_months *= 0.4    # Severely reduced with poor performance
+            survival_probability *= 0.5
+        
+        # Comorbidities significantly reduce survival
+        comorbidities = self.patient_data.get('comorbidities', [])
+        for comorbidity in comorbidities:
+            median_survival_months *= 0.8    # Each comorbidity reduces survival
+            survival_probability *= 0.9
             
-            median_survival_months = max(1, base_months - stem_penalty - resistant_penalty) * age_factor
+        # Patient age affects survival
+        age = self.patient_data.get('age', 55)
+        if age < 40:
+            median_survival_months *= 1.3    # Better for younger patients
+            survival_probability = min(survival_probability * 1.1, 0.95)
+        elif age > 70:
+            median_survival_months *= 0.7    # Worse for elderly
+            survival_probability *= 0.8
+            
+        # Ensure logical consistency between parameters
+        median_survival_months = max(1.0, median_survival_months)  # Minimum 1 month
+        
+        # Update survival probability for consistency
+        self.history['survival_probability'][-1] = survival_probability  # Override the previous value
         
         # Format results for clinical and research use
         return {
