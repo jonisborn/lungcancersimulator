@@ -548,6 +548,51 @@ function displayResults(data, clinical) {
         stemcellPercent = (finalStemcell / finalTotal * 100).toFixed(1);
     }
     
+    // Create HTML content for results
+    const resultsContainer = document.getElementById('results-container');
+    
+    // Clear previous results
+    resultsContainer.innerHTML = '';
+    
+    // Create results summary
+    const resultsHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Final Cell Counts</h5>
+                <p>Total: <strong>${finalTotal.toFixed(0)}</strong> cells</p>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Sensitive
+                        <span class="badge bg-primary rounded-pill">${finalSensitive.toFixed(0)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Resistant
+                        <span class="badge bg-danger rounded-pill">${finalResistant.toFixed(0)}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Stem Cells
+                        <span class="badge bg-warning text-dark rounded-pill">${finalStemcell.toFixed(0)}</span>
+                    </li>
+                </ul>
+                <p>Tumor Volume: <strong>${tumorVolume.toFixed(2)}</strong> mm³</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Clinical Outcome</h5>
+                <p>Clinical Response: <strong>${clinicalResponse}</strong></p>
+                <p>Survival Probability: <strong>${(survivalProbability * 100).toFixed(1)}%</strong></p>
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: ${survivalProbability * 100}%" 
+                        aria-valuenow="${survivalProbability * 100}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p>Projected Survival: <strong>${medianSurvivalMonths.toFixed(1)}</strong> months</p>
+                <p>Tumor Eradicated: <strong>${eradicated ? 'Yes' : 'No'}</strong></p>
+            </div>
+        </div>
+    `;
+    
+    // Add the results to the container
+    resultsContainer.innerHTML = resultsHTML;
+    
     // Calculate growth rate over last 10 days
     let growthRate = 0;
     if (finalDay >= 10) {
