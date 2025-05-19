@@ -2,8 +2,9 @@
  * Main application logic for cancer simulator frontend
  */
 
-// Global variable to store the last simulation result
+// Global variables for the cancer simulator
 window.lastSimulationData = null;
+window.patientProfiles = [];  // Store saved patient profiles
 
 // Initialize when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -15,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update parameter display values
     updateAllDisplayValues();
+    
+    // Set up clinical form listeners
+    setupClinicalFormListeners();
 });
 
 /**
@@ -30,11 +34,128 @@ function setupEventListeners() {
     // Reset parameters button
     document.getElementById('reset-params').addEventListener('click', resetParameters);
     
+    // Save profile button
+    document.getElementById('save-profile').addEventListener('click', savePatientProfile);
+    
     // Toggle log scale button
     document.getElementById('toggle-log-scale').addEventListener('click', toggleLogScale);
     
     // Setup sliders to update their value displays
     setupSliderListeners();
+}
+
+/**
+ * Set up listeners specific to the clinical interface elements
+ */
+function setupClinicalFormListeners() {
+    // Connect direct patient age input to the hidden slider
+    const ageDirectInput = document.getElementById('patient-age-direct');
+    const ageSlider = document.getElementById('patient-age');
+    
+    ageDirectInput.addEventListener('change', function() {
+        ageSlider.value = this.value;
+        document.getElementById('patient-age-value').textContent = this.value;
+    });
+    
+    // Link dropdown selects to hidden inputs
+    document.getElementById('immune-status-select').addEventListener('change', function() {
+        document.getElementById('patient-immune-status').value = this.value;
+    });
+    
+    document.getElementById('metabolism-select').addEventListener('change', function() {
+        document.getElementById('patient-metabolism').value = this.value;
+    });
+    
+    // Update dose intensity display as percentage
+    document.getElementById('dose-intensity').addEventListener('input', function() {
+        const percentValue = Math.round(this.value * 100);
+        document.getElementById('dose-intensity-value-pct').textContent = percentValue;
+        document.getElementById('dose-intensity-value').value = this.value;
+    });
+    
+    // Treatment regimen presets
+    document.getElementById('treatment-regimen').addEventListener('change', function() {
+        const regimen = this.value;
+        
+        switch(regimen) {
+            case 'folfox':
+                document.getElementById('drug-strength').value = 0.85;
+                document.getElementById('drug-decay').value = 0.12;
+                document.getElementById('dose-frequency').value = 14;
+                document.getElementById('treatment-protocol').value = 'PULSED';
+                break;
+                
+            case 'folfiri':
+                document.getElementById('drug-strength').value = 0.8;
+                document.getElementById('drug-decay').value = 0.15;
+                document.getElementById('dose-frequency').value = 14;
+                document.getElementById('treatment-protocol').value = 'PULSED';
+                break;
+                
+            case 'capox':
+                document.getElementById('drug-strength').value = 0.75;
+                document.getElementById('drug-decay').value = 0.08;
+                document.getElementById('dose-frequency').value = 21;
+                document.getElementById('treatment-protocol').value = 'CONTINUOUS';
+                break;
+                
+            case 'custom':
+                // Leave values as is
+                break;
+        }
+        
+        // Update all displays
+        updateAllDisplayValues();
+    });
+    
+    // Set comorbidities to affect immune status and metabolism
+    document.getElementById('comorbidity-diabetes').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('metabolism-select').value = 0.7;
+            document.getElementById('patient-metabolism').value = 0.7;
+        }
+    });
+    
+    document.getElementById('comorbidity-cardiac').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('immune-status-select').value = 0.8;
+            document.getElementById('patient-immune-status').value = 0.8;
+        }
+    });
+    
+    // Disease stage affects initial cell populations
+    document.getElementById('disease-stage').addEventListener('change', function() {
+        const stage = parseInt(this.value);
+        
+        switch(stage) {
+            case 1:
+                document.getElementById('sensitive-cells').value = 50;
+                document.getElementById('resistant-cells').value = 2;
+                document.getElementById('stem-cells').value = 1;
+                break;
+                
+            case 2:
+                document.getElementById('sensitive-cells').value = 100;
+                document.getElementById('resistant-cells').value = 5;
+                document.getElementById('stem-cells').value = 2;
+                break;
+                
+            case 3:
+                document.getElementById('sensitive-cells').value = 200;
+                document.getElementById('resistant-cells').value = 20;
+                document.getElementById('stem-cells').value = 10;
+                break;
+                
+            case 4:
+                document.getElementById('sensitive-cells').value = 500;
+                document.getElementById('resistant-cells').value = 100;
+                document.getElementById('stem-cells').value = 30;
+                break;
+        }
+        
+        // Update displays
+        updateAllDisplayValues();
+    });
 }
 
 /**
@@ -200,6 +321,30 @@ function resetParameters() {
  * @returns {Object} - Object containing all simulation parameters
  */
 function collectParameters() {
+    // Get patient demographics
+    const patientAge = document.getElementById('patient-age-direct') ? 
+                      parseInt(document.getElementById('patient-age-direct').value) :
+                      parseInt(document.getElementById('patient-age').value);
+    
+    const patientGender = document.getElementById('gender-male').checked ? 'male' : 'female';
+    const patientWeight = parseInt(document.getElementById('patient-weight').value);
+    const performanceStatus = parseInt(document.getElementById('performance-status').value);
+    
+    // Get comorbidities
+    const comorbidities = [];
+    if (document.getElementById('comorbidity-diabetes').checked) comorbidities.push('diabetes');
+    if (document.getElementById('comorbidity-hypertension').checked) comorbidities.push('hypertension');
+    if (document.getElementById('comorbidity-cardiac').checked) comorbidities.push('cardiac');
+    
+    // Get prior treatments
+    const priorTreatments = [];
+    if (document.getElementById('prior-chemo').checked) priorTreatments.push('chemotherapy');
+    if (document.getElementById('prior-radiation').checked) priorTreatments.push('radiation');
+    
+    // Get disease characteristics
+    const tumorType = document.getElementById('tumor-type').value;
+    const diseaseStage = parseInt(document.getElementById('disease-stage').value);
+    
     // Get cell population values
     const sensitiveCells = parseInt(document.getElementById('sensitive-cells').value);
     const resistantCells = parseInt(document.getElementById('resistant-cells').value);
@@ -207,6 +352,7 @@ function collectParameters() {
     const immuneCells = parseInt(document.getElementById('immune-cells').value);
     
     // Get treatment protocol parameters
+    const treatmentRegimen = document.getElementById('treatment-regimen').value;
     const treatmentProtocol = document.getElementById('treatment-protocol').value;
     const drugStrength = parseFloat(document.getElementById('drug-strength').value);
     const drugDecay = parseFloat(document.getElementById('drug-decay').value);
@@ -214,7 +360,6 @@ function collectParameters() {
     const doseIntensity = parseFloat(document.getElementById('dose-intensity').value);
     
     // Get patient parameters
-    const patientAge = parseInt(document.getElementById('patient-age').value);
     const patientMetabolism = parseFloat(document.getElementById('patient-metabolism').value);
     const patientImmuneStatus = parseFloat(document.getElementById('patient-immune-status').value);
     const immuneStrength = parseFloat(document.getElementById('immune-strength').value);
@@ -242,6 +387,12 @@ function collectParameters() {
         }
     });
     
+    // Clinical patient factors that affect simulation
+    let organFunction = 1.0;
+    if (comorbidities.includes('cardiac') || comorbidities.includes('diabetes')) {
+        organFunction = 0.8;
+    }
+    
     // Return complete parameter set
     return {
         // Cell populations
@@ -261,14 +412,93 @@ function collectParameters() {
         patient_age: patientAge,
         patient_metabolism: patientMetabolism,
         patient_immune_status: patientImmuneStatus,
+        patient_organ_function: organFunction,
         immune_strength: immuneStrength,
         
         // Evolutionary parameters
         mutation_rate: mutationRate,
         chaos_level: chaosLevel,
         time_steps: timeSteps,
-        game_matrix: gameMatrix
+        game_matrix: gameMatrix,
+        
+        // Clinical metadata (not used in simulation but stored for reference)
+        clinical_metadata: {
+            patient_gender: patientGender,
+            patient_weight: patientWeight,
+            performance_status: performanceStatus,
+            comorbidities: comorbidities,
+            prior_treatments: priorTreatments,
+            tumor_type: tumorType,
+            disease_stage: diseaseStage,
+            treatment_regimen: treatmentRegimen
+        }
     };
+}
+
+/**
+ * Save the current patient profile for future use
+ */
+function savePatientProfile() {
+    // Get patient name or generate one
+    let patientName = prompt("Enter patient identifier or name:", "Patient " + (window.patientProfiles.length + 1));
+    
+    if (!patientName) return;  // User cancelled
+    
+    // Collect all current parameters
+    const profileData = collectParameters();
+    
+    // Add patient identifier
+    profileData.patient_name = patientName;
+    profileData.saved_date = new Date().toISOString();
+    
+    // Save to profiles array
+    window.patientProfiles.push(profileData);
+    
+    // Show confirmation message
+    alert(`Patient profile "${patientName}" saved successfully. You can now run multiple simulations with different treatment protocols for comparison.`);
+    
+    // Update UI to show saved profiles
+    updateSavedProfilesList();
+}
+
+/**
+ * Update the UI to show saved patient profiles
+ */
+function updateSavedProfilesList() {
+    const profilesListElement = document.getElementById('saved-profiles');
+    if (!profilesListElement) return;
+    
+    // Clear current list
+    profilesListElement.innerHTML = '';
+    
+    // Add each profile to the list
+    window.patientProfiles.forEach((profile, index) => {
+        const profileItem = document.createElement('div');
+        profileItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        
+        // Create profile content
+        const profileContent = document.createElement('div');
+        profileContent.innerHTML = `
+            <h6 class="mb-0">${profile.patient_name}</h6>
+            <small class="text-muted">
+                ${profile.clinical_metadata.tumor_type}, Stage ${profile.clinical_metadata.disease_stage}, 
+                Age: ${profile.patient_age}
+            </small>
+        `;
+        
+        // Create load button
+        const loadButton = document.createElement('button');
+        loadButton.className = 'btn btn-sm btn-outline-primary';
+        loadButton.textContent = 'Load';
+        loadButton.onclick = () => loadPatientProfile(index);
+        
+        // Add elements to list item
+        profileItem.appendChild(profileContent);
+        profileItem.appendChild(loadButton);
+        
+        // Add to list
+        profilesListElement.appendChild(profileItem);
+    });
 }
 
 /**
