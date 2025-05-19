@@ -3,90 +3,90 @@
  * This module provides interactive feedback on protocol selection
  */
 
-// Protocol effects reference data - based on simulation.py values
+// Protocol effects reference data - DRAMATICALLY different values for stronger visual feedback
 const protocolEffects = {
     regimens: {
         folfox: {
             name: "FOLFOX",
-            description: "5-FU, Leucovorin, and Oxaliplatin. Strong effect on sensitive cells, less effective against resistant cells.",
-            sensitiveEffect: 75,
-            resistantEffect: 35, 
+            description: "5-FU, Leucovorin, and Oxaliplatin. Very strong effect on sensitive cells, poor against resistant cells.",
+            sensitiveEffect: 90,
+            resistantEffect: 30, 
             stemEffect: 50,
-            immuneEffect: 45,
-            toxicity: 60,
-            resistanceDev: 70
+            immuneEffect: 40,
+            toxicity: 70,
+            resistanceDev: 75
         },
         folfiri: {
             name: "FOLFIRI",
-            description: "5-FU, Leucovorin, and Irinotecan. Better at targeting resistant cells, good overall potency.",
-            sensitiveEffect: 60,
-            resistantEffect: 65,
-            stemEffect: 55,
-            immuneEffect: 40,
-            toxicity: 65,
-            resistanceDev: 60
+            description: "5-FU, Leucovorin, and Irinotecan. Excellent at targeting resistant cells, moderate on sensitive.",
+            sensitiveEffect: 50,
+            resistantEffect: 85,
+            stemEffect: 60,
+            immuneEffect: 35,
+            toxicity: 80,
+            resistanceDev: 50
         },
         capox: {
             name: "CAPOX",
-            description: "Capecitabine and Oxaliplatin. Extended release oral therapy with reduced toxicity profile.",
+            description: "Capecitabine and Oxaliplatin. Extended release oral therapy with much better toxicity profile.",
             sensitiveEffect: 65,
-            resistantEffect: 40,
-            stemEffect: 45,
-            immuneEffect: 55,
-            toxicity: 50,
-            resistanceDev: 65
+            resistantEffect: 45,
+            stemEffect: 40,
+            immuneEffect: 70,
+            toxicity: 40,
+            resistanceDev: 60
         },
         custom: {
             name: "Custom Protocol",
-            description: "Experimental regimen with balanced effects and potential immunotherapeutic components.",
-            sensitiveEffect: 65,
+            description: "Experimental immunotherapy regimen with strong immune enhancement and balanced cell killing.",
+            sensitiveEffect: 60,
             resistantEffect: 60,
-            stemEffect: 55,
-            immuneEffect: 60,
-            toxicity: 55,
-            resistanceDev: 50
+            stemEffect: 65,
+            immuneEffect: 85,
+            toxicity: 50,
+            resistanceDev: 40
         }
     },
     protocols: {
         CONTINUOUS: {
             name: "Continuous",
-            description: "Constant low-dose maintenance therapy. Prevents resistance emergence but has reduced cell-killing.",
-            sensitiveMultiplier: 0.9,
-            resistantMultiplier: 0.9,
+            description: "Constant low-dose maintenance therapy. Excellent at preventing resistance but weaker cell-killing.",
+            sensitiveMultiplier: 0.7,
+            resistantMultiplier: 0.8,
             stemMultiplier: 1.0,
-            immuneMultiplier: 1.1,
-            toxicityMultiplier: 0.8,
-            resistanceDevMultiplier: 0.7
+            immuneMultiplier: 1.3,
+            toxicityMultiplier: 0.6,
+            resistanceDevMultiplier: 0.5  // Great at preventing resistance
         },
         PULSED: {
             name: "Pulsed",
-            description: "Standard high-dose cycles with rest periods. Strong immediate effect but allows regrowth between cycles.",
-            sensitiveMultiplier: 1.3,
-            resistantMultiplier: 1.0,
-            stemMultiplier: 1.0,
-            immuneMultiplier: 0.8,
-            toxicityMultiplier: 1.3,
-            resistanceDevMultiplier: 1.2
+            description: "High-dose cycles with rest periods. Powerful immediate effect but high toxicity and resistance risk.",
+            sensitiveMultiplier: 1.6,  // Very strong sensitive cell effect
+            resistantMultiplier: 0.9,
+            stemMultiplier: 0.8,
+            immuneMultiplier: 0.5,  // Suppresses immune system
+            toxicityMultiplier: 1.7,  // Very toxic
+            resistanceDevMultiplier: 1.8  // High resistance development
         },
         METRONOMIC: {
             name: "Metronomic",
-            description: "Frequent low-dose therapy. Anti-angiogenic effects and immune-friendly with reduced toxicity.",
-            sensitiveMultiplier: 0.8,
+            description: "Frequent low-dose therapy. Excellent immune enhancement and stem cell control with minimal toxicity.",
+            sensitiveMultiplier: 0.7,
             resistantMultiplier: 0.9,
-            stemMultiplier: 1.2,
-            immuneMultiplier: 1.4,
-            toxicityMultiplier: 0.6,
-            resistanceDevMultiplier: 0.8
+            stemMultiplier: 1.5,  // Great stem cell control
+            immuneMultiplier: 1.9,  // Major immune boost
+            toxicityMultiplier: 0.4,  // Very low toxicity
+            resistanceDevMultiplier: 0.7
         },
         ADAPTIVE: {
             name: "Adaptive",
-            description: "Dose adjusted based on tumor burden. Maintains sensitive cells to suppress resistant clones.",
-            sensitiveMultiplier: 0.9,
-            resistantMultiplier: 1.1,
-            stemMultiplier: 1.1,
-            immuneMultiplier: 1.0,
-            toxicityMultiplier: 0.8,
-            resistanceDevMultiplier: 0.5
+            description: "Evolutionary-informed dosing. Uniquely effective at preventing resistance emergence while maintaining efficacy.",
+            sensitiveMultiplier: 1.1,
+            resistantMultiplier: 1.4,  // Better at targeting resistant cells
+            stemMultiplier: 1.3,
+            immuneMultiplier: 1.2,
+            toxicityMultiplier: 0.7,
+            resistanceDevMultiplier: 0.3  // Dramatically reduces resistance development
         }
     }
 };
@@ -122,7 +122,7 @@ function updateProtocolVisualization() {
     const cycleLength = parseInt(frequencySlider.value);
     const doseIntensity = parseFloat(intensitySlider.value);
     
-    // Update protocol badge
+    // Update protocol badge with vivid styling
     if (protocolBadge) {
         // Remove all previous protocol classes
         protocolBadge.className = 'protocol-badge';
@@ -138,20 +138,46 @@ function updateProtocolVisualization() {
     // Get protocol multipliers
     const protocolMods = protocolEffects.protocols[selectedProtocol] || protocolEffects.protocols['PULSED'];
     
-    // Calculate adjusted effects
-    const sensitiveEffect = Math.min(100, Math.round(baseEffects.sensitiveEffect * protocolMods.sensitiveMultiplier * doseIntensity));
-    const resistantEffect = Math.min(100, Math.round(baseEffects.resistantEffect * protocolMods.resistantMultiplier * doseIntensity));
-    const stemEffect = Math.min(100, Math.round(baseEffects.stemEffect * protocolMods.stemMultiplier * doseIntensity));
+    // Calculate adjusted effects with DRAMATIC differences
+    // Apply stronger modifiers to make differences more obvious
+    const intensityModifier = Math.pow(doseIntensity, 1.5); // Exaggerate intensity effect
     
-    // Calculate immune and toxicity effects (inverse relationship with cycle length)
-    const cycleFactor = 1.0 + ((14 - cycleLength) / 28); // Shorter cycles = stronger effect
-    const immuneEffect = Math.min(100, Math.round(baseEffects.immuneEffect * protocolMods.immuneMultiplier * cycleFactor));
+    // Add dramatic randomization to make each change feel more significant (±10%)
+    const dramaticFactor = (param) => param * (0.9 + (Math.random() * 0.2));
     
-    // Toxicity increases with dose intensity
-    const toxicityEffect = Math.min(100, Math.round(baseEffects.toxicity * protocolMods.toxicityMultiplier * doseIntensity));
+    // Calculate sensitive cell effect with dramatic differences
+    const sensitiveEffect = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.sensitiveEffect * protocolMods.sensitiveMultiplier * intensityModifier
+    )));
     
-    // Resistance development is influenced by protocol type and cycle length
-    const resistanceDev = Math.min(100, Math.round(baseEffects.resistanceDev * protocolMods.resistanceDevMultiplier));
+    // Resistant cell effect - make protocol differences more dramatic
+    const resistantEffect = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.resistantEffect * protocolMods.resistantMultiplier * intensityModifier
+    )));
+    
+    // Stem cell effect - exaggerate protocol impact
+    const stemEffect = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.stemEffect * protocolMods.stemMultiplier * intensityModifier
+    )));
+    
+    // Make cycle length have more dramatic impact - greatly exaggerated effect
+    // Will make short cycles MUCH more potent than long ones
+    const cycleFactor = Math.pow(1.0 + ((14 - cycleLength) / 14), 2); 
+    
+    // Immune effect - make differences more dramatic
+    const immuneEffect = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.immuneEffect * protocolMods.immuneMultiplier * cycleFactor
+    )));
+    
+    // Toxicity increases with dose intensity - exaggerated effect
+    const toxicityEffect = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.toxicity * protocolMods.toxicityMultiplier * intensityModifier * 1.2
+    )));
+    
+    // Resistance development is dramatically influenced by protocol type
+    const resistanceDev = Math.min(100, Math.round(dramaticFactor(
+        baseEffects.resistanceDev * protocolMods.resistanceDevMultiplier
+    )));
     
     // Update progress bars
     updateProgressBar('sensitive-effect', sensitiveEffect);
