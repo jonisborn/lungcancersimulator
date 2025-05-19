@@ -337,31 +337,77 @@ function resetParameters() {
  * @returns {Object} - Object containing all simulation parameters
  */
 function collectParameters() {
-    // Get cell population values
+    // Get patient demographics
+    const patientAge = document.getElementById('patient-age-direct') ? 
+                       parseInt(document.getElementById('patient-age-direct').value) : 
+                       parseInt(document.getElementById('patient-age').value || 55);
+    
+    const patientGender = document.getElementById('gender-male') && document.getElementById('gender-male').checked ? 
+                          'male' : 'female';
+    
+    const patientWeight = document.getElementById('patient-weight') ? 
+                          parseInt(document.getElementById('patient-weight').value) : 70;
+    
+    const performanceStatus = document.getElementById('performance-status') ? 
+                             parseInt(document.getElementById('performance-status').value) : 1;
+    
+    // Get comorbidities
+    const comorbidities = [];
+    if (document.getElementById('comorbidity-diabetes') && document.getElementById('comorbidity-diabetes').checked) 
+        comorbidities.push('diabetes');
+    if (document.getElementById('comorbidity-hypertension') && document.getElementById('comorbidity-hypertension').checked) 
+        comorbidities.push('hypertension');
+    if (document.getElementById('comorbidity-cardiac') && document.getElementById('comorbidity-cardiac').checked) 
+        comorbidities.push('cardiac');
+    
+    // Get disease characteristics
+    const tumorType = document.getElementById('tumor-type') ? 
+                     document.getElementById('tumor-type').value : 'colorectal';
+    
+    const diseaseStage = document.getElementById('disease-stage') ? 
+                        parseInt(document.getElementById('disease-stage').value) : 3;
+    
+    // Get cell population values - handle the case where Stage selection changed these
     const sensitiveCells = parseInt(document.getElementById('sensitive-cells').value);
     const resistantCells = parseInt(document.getElementById('resistant-cells').value);
     const stemCells = parseInt(document.getElementById('stem-cells').value);
     const immuneCells = parseInt(document.getElementById('immune-cells').value);
     
-    // Get treatment protocol parameters
+    // Get treatment regimen and protocol
+    const treatmentRegimen = document.getElementById('treatment-regimen') ? 
+                            document.getElementById('treatment-regimen').value : 'custom';
+    
     const treatmentProtocol = document.getElementById('treatment-protocol').value;
     const drugStrength = parseFloat(document.getElementById('drug-strength').value);
     const drugDecay = parseFloat(document.getElementById('drug-decay').value);
     const doseFrequency = parseInt(document.getElementById('dose-frequency').value);
     const doseIntensity = parseFloat(document.getElementById('dose-intensity').value);
     
-    // Get patient parameters
-    const patientAge = parseInt(document.getElementById('patient-age').value);
-    const patientMetabolism = parseFloat(document.getElementById('patient-metabolism').value);
-    const patientImmuneStatus = parseFloat(document.getElementById('patient-immune-status').value);
-    const immuneStrength = parseFloat(document.getElementById('immune-strength').value);
+    // Get patient clinical parameters
+    const patientMetabolism = document.getElementById('patient-metabolism') ? 
+                             parseFloat(document.getElementById('patient-metabolism').value) : 1.0;
+    
+    const patientImmuneStatus = document.getElementById('patient-immune-status') ? 
+                               parseFloat(document.getElementById('patient-immune-status').value) : 1.0;
+                               
+    // Calculate organ function based on comorbidities
+    let organFunction = 1.0;
+    if (comorbidities.includes('cardiac') || comorbidities.includes('diabetes')) {
+        organFunction = 0.8;
+    }
+    
+    // Performance status affects immune response
+    let immuneStrength = parseFloat(document.getElementById('immune-strength').value);
+    if (performanceStatus >= 2) {
+        immuneStrength *= 0.8; // Reduced immune function with poor performance status
+    }
     
     // Get evolutionary parameters
     const mutationRate = parseFloat(document.getElementById('mutation-rate').value);
     const chaosLevel = parseFloat(document.getElementById('chaos-level').value);
     const timeSteps = parseInt(document.getElementById('time-steps').value);
     
-    // Return complete parameter set
+    // Return complete parameter set with clinical context
     return {
         // Cell populations
         sensitive_cells: sensitiveCells,
@@ -378,10 +424,19 @@ function collectParameters() {
         
         // Patient parameters
         patient_age: patientAge,
+        patient_weight: patientWeight,
+        patient_gender: patientGender,
         patient_metabolism: patientMetabolism,
         patient_immune_status: patientImmuneStatus,
-        patient_organ_function: 1.0, // Default to normal
+        patient_organ_function: organFunction,
         immune_strength: immuneStrength,
+        performance_status: performanceStatus,
+        
+        // Disease characteristics
+        tumor_type: tumorType,
+        disease_stage: diseaseStage,
+        comorbidities: comorbidities,
+        treatment_regimen: treatmentRegimen,
         
         // Evolutionary parameters
         mutation_rate: mutationRate,

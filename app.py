@@ -38,12 +38,18 @@ def simulate():
         except (KeyError, ValueError):
             treatment_protocol = TreatmentProtocol.CONTINUOUS
         
-        # Create patient profile data with safety checks
+        # Create enhanced patient profile data with safety checks
         patient_data = {
             'age': int(data.get('patient_age', 55)),
+            'weight': int(data.get('patient_weight', 70)),
+            'gender': data.get('patient_gender', 'male'),
+            'performance_status': int(data.get('performance_status', 1)),
             'metabolism': float(data.get('patient_metabolism', 1.0)), 
             'immune_status': float(data.get('patient_immune_status', 1.0)),
-            'organ_function': float(data.get('patient_organ_function', 1.0))
+            'organ_function': float(data.get('patient_organ_function', 1.0)),
+            'tumor_type': data.get('tumor_type', 'colorectal'),
+            'disease_stage': int(data.get('disease_stage', 3)),
+            'comorbidities': data.get('comorbidities', [])
         }
         
         # Build complete parameters dictionary with safety checks
