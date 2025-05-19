@@ -224,16 +224,22 @@ function collectParameters() {
     const chaosLevel = parseFloat(document.getElementById('chaos-level').value);
     const timeSteps = parseInt(document.getElementById('time-steps').value);
     
-    // Get game matrix values
-    const gameMatrix = [[], [], [], []];
+    // Get game matrix values - ensure all rows have the same length
+    const gameMatrix = [
+        [1.0, 0.7, 0.8, 0.3],
+        [0.9, 0.6, 0.7, 0.4],
+        [1.1, 0.8, 1.0, 0.2],
+        [0.0, 0.0, 0.0, 0.0]
+    ];
+    
+    // Only update the existing matrix inputs (3x3 section)
     const matrixInputs = document.querySelectorAll('.matrix-input');
     matrixInputs.forEach(input => {
         const row = parseInt(input.dataset.row);
         const col = parseInt(input.dataset.col);
-        if (!gameMatrix[row]) {
-            gameMatrix[row] = [];
+        if (row < 3 && col < 3) {  // Only for the visible 3x3 matrix in the UI
+            gameMatrix[row][col] = parseFloat(input.value);
         }
-        gameMatrix[row][col] = parseFloat(input.value);
     });
     
     // Return complete parameter set
