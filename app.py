@@ -73,10 +73,25 @@ def simulate():
         # Get additional clinical summary
         clinical_summary = simulation.get_summary()
         
+        # Convert any non-JSON serializable types (like Enum) to strings
+        def make_json_serializable(obj):
+            if isinstance(obj, dict):
+                return {k: make_json_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [make_json_serializable(item) for item in obj]
+            elif isinstance(obj, (bool, int, float, str, type(None))):
+                return obj
+            else:
+                return str(obj)
+        
+        # Apply the conversion to both results and clinical_summary
+        results_serializable = make_json_serializable(results)
+        clinical_summary_serializable = make_json_serializable(clinical_summary)
+        
         # Combine results and clinical information
         response = {
-            "simulation_data": results,
-            "clinical_summary": clinical_summary
+            "simulation_data": results_serializable,
+            "clinical_summary": clinical_summary_serializable
         }
         
         return jsonify(response)
