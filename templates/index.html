@@ -259,81 +259,245 @@
                             <!-- Treatment Protocol Section -->
                             <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">Treatment Protocol</h5>
                             
-                            <!-- Interactive Protocol Selector -->
-                            <div class="card mb-3 bg-dark protocol-selector-card">
-                                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">Interactive Protocol Selector</h5>
-                                    <span id="protocol-badge" class="protocol-badge protocol-badge-pulsed">PULSED</span>
+                            <!-- COMPLETELY REDESIGNED Interactive Protocol Selector -->
+                            <div class="mb-4">
+                                <h5 class="border-bottom pb-2 mb-4 text-primary">Treatment Protocol Builder</h5>
+                                
+                                <!-- VISUAL PROTOCOL CARDS -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold mb-3">Select Dosing Strategy:</label>
+                                    <div class="d-flex flex-nowrap overflow-auto pb-2 gap-3">
+                                        <!-- CONTINUOUS PROTOCOL CARD -->
+                                        <div class="protocol-card card bg-dark" style="min-width: 200px; border: 2px solid transparent;" data-protocol="CONTINUOUS">
+                                            <div class="card-body text-center p-3">
+                                                <div class="protocol-icon bg-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                                    style="width: 60px; height: 60px;">
+                                                    <i class="bi bi-battery-full fs-2"></i>
+                                                </div>
+                                                <h5 class="card-title">CONTINUOUS</h5>
+                                                <p class="card-text small">Constant low-dose maintenance</p>
+                                                <div class="protocol-features mt-2">
+                                                    <span class="badge bg-success mb-1">Low Toxicity</span>
+                                                    <span class="badge bg-success mb-1">Resistance Prevention</span>
+                                                    <span class="badge bg-danger mb-1">Reduced Potency</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- PULSED PROTOCOL CARD -->
+                                        <div class="protocol-card card bg-dark active" style="min-width: 200px; border: 2px solid var(--bs-danger);" data-protocol="PULSED">
+                                            <div class="card-body text-center p-3">
+                                                <div class="protocol-icon bg-danger rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                                    style="width: 60px; height: 60px;">
+                                                    <i class="bi bi-graph-up-arrow fs-2"></i>
+                                                </div>
+                                                <h5 class="card-title">PULSED</h5>
+                                                <p class="card-text small">High-dose cycles with rest periods</p>
+                                                <div class="protocol-features mt-2">
+                                                    <span class="badge bg-success mb-1">High Potency</span>
+                                                    <span class="badge bg-danger mb-1">High Toxicity</span>
+                                                    <span class="badge bg-danger mb-1">Resistance Risk</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- METRONOMIC PROTOCOL CARD -->
+                                        <div class="protocol-card card bg-dark" style="min-width: 200px; border: 2px solid transparent;" data-protocol="METRONOMIC">
+                                            <div class="card-body text-center p-3">
+                                                <div class="protocol-icon bg-info rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                                    style="width: 60px; height: 60px;">
+                                                    <i class="bi bi-clock-history fs-2"></i>
+                                                </div>
+                                                <h5 class="card-title">METRONOMIC</h5>
+                                                <p class="card-text small">Frequent low-dose therapy</p>
+                                                <div class="protocol-features mt-2">
+                                                    <span class="badge bg-success mb-1">Immune-friendly</span>
+                                                    <span class="badge bg-success mb-1">Low Toxicity</span>
+                                                    <span class="badge bg-danger mb-1">Moderate Potency</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- ADAPTIVE PROTOCOL CARD -->
+                                        <div class="protocol-card card bg-dark" style="min-width: 200px; border: 2px solid transparent;" data-protocol="ADAPTIVE">
+                                            <div class="card-body text-center p-3">
+                                                <div class="protocol-icon bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
+                                                    style="width: 60px; height: 60px;">
+                                                    <i class="bi bi-bar-chart-steps fs-2"></i>
+                                                </div>
+                                                <h5 class="card-title">ADAPTIVE</h5>
+                                                <p class="card-text small">Tumor burden-guided dosing</p>
+                                                <div class="protocol-features mt-2">
+                                                    <span class="badge bg-success mb-1">Anti-Resistance</span>
+                                                    <span class="badge bg-success mb-1">Balanced</span>
+                                                    <span class="badge bg-warning mb-1">Complex</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="treatment-protocol" value="PULSED">
                                 </div>
-                                <div class="card-body">
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label fw-bold">Treatment Regimen</label>
-                                            <select class="form-select protocol-selector" id="treatment-regimen">
-                                                <option value="folfox" selected data-tooltip="Standard first-line therapy for colorectal cancer. Good overall efficacy.">FOLFOX (5-FU, leucovorin, oxaliplatin)</option>
-                                                <option value="folfiri" data-tooltip="Alternative first-line or second-line therapy. Better against resistant disease.">FOLFIRI (5-FU, leucovorin, irinotecan)</option>
-                                                <option value="capox" data-tooltip="Oral capecitabine with oxaliplatin. Convenient administration with extended effect.">CAPOX (capecitabine, oxaliplatin)</option>
-                                                <option value="custom" data-tooltip="Experimental protocol combining multiple mechanisms of action.">Custom Protocol</option>
-                                            </select>
+                                
+                                <!-- DRUG REGIMEN SELECTOR -->
+                                <div class="row mb-4">
+                                    <div class="col-lg-6">
+                                        <label class="form-label fw-bold">Select Drug Combination:</label>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfox" value="folfox" checked>
+                                                <label class="form-check-label" for="folfox">FOLFOX</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfiri" value="folfiri">
+                                                <label class="form-check-label" for="folfiri">FOLFIRI</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="capox" value="capox">
+                                                <label class="form-check-label" for="capox">CAPOX</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="custom" value="custom">
+                                                <label class="form-check-label" for="custom">CUSTOM</label>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label for="treatment-protocol" class="form-label fw-bold">Dosing Strategy</label>
-                                            <select class="form-select protocol-selector" id="treatment-protocol">
-                                                <option value="CONTINUOUS" data-tooltip="Maintains constant drug level. Prevents resistance but has reduced cell-killing.">Continuous (Maintenance)</option>
-                                                <option value="PULSED" selected data-tooltip="Standard high-dose cycles with rest periods. Strong immediate effect but allows regrowth.">Pulsed (Standard)</option>
-                                                <option value="METRONOMIC" data-tooltip="Frequent low-dose therapy. Anti-angiogenic effects and immune-friendly.">Metronomic (Low-dose, Frequent)</option>
-                                                <option value="ADAPTIVE" data-tooltip="Dose adjusted based on tumor burden. Maintains sensitive cells to suppress resistant clones.">Adaptive (Tumor-guided)</option>
-                                            </select>
+                                        <input type="hidden" id="treatment-regimen" value="folfox">
+                                        
+                                        <div class="regimen-info mt-2">
+                                            <div id="folfox-info" class="alert alert-info py-2 small">
+                                                <strong>FOLFOX:</strong> 5-FU, leucovorin, oxaliplatin. Excellent for sensitive cells, less effective against resistant cells.
+                                            </div>
+                                            <div id="folfiri-info" class="alert alert-info py-2 small d-none">
+                                                <strong>FOLFIRI:</strong> 5-FU, leucovorin, irinotecan. Better at targeting resistant cells with higher toxicity.
+                                            </div>
+                                            <div id="capox-info" class="alert alert-info py-2 small d-none">
+                                                <strong>CAPOX:</strong> Capecitabine and oxaliplatin. Oral therapy with extended effect and better tolerability.
+                                            </div>
+                                            <div id="custom-info" class="alert alert-info py-2 small d-none">
+                                                <strong>CUSTOM:</strong> Experimental immunotherapy with balanced effects and immune enhancement.
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label for="dose-frequency" class="form-label fw-bold">
-                                                Cycle Length (days): <span id="dose-frequency-value">14</span>
-                                            </label>
-                                            <input type="range" class="form-range protocol-selector" id="dose-frequency" min="1" max="28" value="14" step="1">
+                                    <div class="col-lg-6">
+                                        <div class="row">
+                                            <div class="col">
+                                                <label for="dose-frequency" class="form-label fw-bold">
+                                                    Cycle Length: <span id="dose-frequency-value" class="badge bg-light text-dark">14 DAYS</span>
+                                                </label>
+                                                <input type="range" class="form-range protocol-selector" id="dose-frequency" min="1" max="28" value="14" step="1">
+                                            </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <label for="dose-intensity" class="form-label fw-bold">
-                                                Dose Intensity (%): <span id="dose-intensity-value">100</span>
-                                            </label>
-                                            <input type="range" class="form-range protocol-selector" id="dose-intensity" min="0.5" max="1.2" value="1.0" step="0.05">
+                                        <div class="row mt-3">
+                                            <div class="col">
+                                                <label for="dose-intensity" class="form-label fw-bold">
+                                                    Dose Intensity: <span id="dose-intensity-value" class="badge bg-light text-dark">100%</span>
+                                                </label>
+                                                <input type="range" class="form-range protocol-selector" id="dose-intensity" min="0.5" max="1.2" value="1.0" step="0.05">
+                                            </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Real-time Protocol Impact Visualization -->
-                                    <div class="mt-3 pt-3 border-top">
-                                        <h6 class="mb-3 text-white">Real-time Protocol Impact</h6>
-                                        <div class="effect-grid">
-                                            <span class="progress-label">Sensitive Cell Effect:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="sensitive-effect" class="progress-bar sensitive-effect-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                                </div>
+                                
+                                <!-- DRAMATIC REAL-TIME PROTOCOL IMPACT VISUALIZATION -->
+                                <div class="card bg-dark shadow-sm">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h6 class="mb-0 text-white">Real-time Treatment Impact</h6>
+                                        <span id="protocol-badge" class="badge bg-danger px-3 py-2">PULSED + FOLFOX</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-success d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-virus"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Sensitive Cell Effect</label>
+                                                            <span class="small text-end" id="sensitive-effect-value">75%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="sensitive-effect" class="progress-bar sensitive-effect-bar" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-danger d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-shield-x"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Resistant Cell Effect</label>
+                                                            <span class="small text-end" id="resistant-effect-value">35%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="resistant-effect" class="progress-bar resistant-effect-bar" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-warning d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-stars"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Stem Cell Effect</label>
+                                                            <span class="small text-end" id="stem-effect-value">50%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="stem-effect" class="progress-bar stem-effect-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             
-                                            <span class="progress-label">Resistant Cell Effect:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="resistant-effect" class="progress-bar resistant-effect-bar" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">35%</div>
-                                            </div>
-                                            
-                                            <span class="progress-label">Stem Cell Effect:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="stem-effect" class="progress-bar stem-effect-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
-                                            </div>
-                                            
-                                            <span class="progress-label">Immune Effect:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="immune-effect" class="progress-bar immune-effect-bar" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
-                                            </div>
-                                            
-                                            <span class="progress-label">Toxicity Level:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="toxicity-effect" class="progress-bar bg-danger" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">40%</div>
-                                            </div>
-                                            
-                                            <span class="progress-label">Resistance Development:</span>
-                                            <div class="progress" style="height: 22px;">
-                                                <div id="resistance-dev-effect" class="progress-bar bg-secondary" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">30%</div>
+                                            <div class="col-md-6">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-info d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-heart-pulse"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Immune Effect</label>
+                                                            <span class="small text-end" id="immune-effect-value">65%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="immune-effect" class="progress-bar immune-effect-bar" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-danger d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-radioactive"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Toxicity Level</label>
+                                                            <span class="small text-end" id="toxicity-effect-value">40%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="toxicity-effect" class="progress-bar bg-danger" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="impact-icon bg-secondary d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px; border-radius: 8px;">
+                                                        <i class="bi bi-diagram-3"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex justify-content-between mb-1">
+                                                            <label class="small mb-0">Resistance Development</label>
+                                                            <span class="small text-end" id="resistance-dev-effect-value">30%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 12px;">
+                                                            <div id="resistance-dev-effect" class="progress-bar bg-secondary" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         
@@ -348,13 +512,16 @@
                                 </div>
                             </div>
                             
-                            <!-- Sticky Action Button Bar -->
-                            <div class="position-sticky bottom-0 bg-dark p-3 mt-4 d-flex gap-2" style="border-top: 1px solid var(--bs-border-color); z-index: 1000;">
-                                <button type="submit" id="run-simulation" class="btn btn-primary btn-lg flex-grow-1">
-                                    <i class="bi bi-play-fill"></i> Run Clinical Simulation
-                                </button>
-                                <button type="button" id="reset-params" class="btn btn-secondary">Reset</button>
-                                <button type="button" id="save-profile" class="btn btn-outline-info">Save Profile</button>
+                            <!-- FLOATING ACTION BUTTON - ALWAYS VISIBLE -->
+                            <div class="fixed-bottom p-4 d-flex justify-content-center" style="z-index: 1050; pointer-events: none;">
+                                <div class="d-flex gap-2" style="pointer-events: auto;">
+                                    <button type="button" id="reset-params" class="btn btn-dark">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                    <button type="submit" id="run-simulation" class="btn btn-danger btn-lg px-4 shadow">
+                                        <i class="bi bi-play-fill me-2"></i> RUN SIMULATION
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>

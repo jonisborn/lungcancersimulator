@@ -95,6 +95,12 @@ const protocolEffects = {
  * Initialize the protocol visualizer
  */
 function initProtocolVisualizer() {
+    // Set up protocol card selection
+    setupProtocolCards();
+    
+    // Set up drug regimen radio buttons
+    setupRegimenRadioButtons();
+    
     // Attach event listeners to protocol selectors
     document.querySelectorAll('.protocol-selector').forEach(selector => {
         selector.addEventListener('change', updateProtocolVisualization);
@@ -106,30 +112,131 @@ function initProtocolVisualizer() {
 }
 
 /**
+ * Set up protocol card selection with dramatic visual feedback
+ */
+function setupProtocolCards() {
+    // Get all protocol cards
+    const cards = document.querySelectorAll('.protocol-card');
+    const protocolInput = document.getElementById('treatment-protocol');
+    
+    cards.forEach(card => {
+        // Add click event to each card
+        card.addEventListener('click', function() {
+            // Remove active class from all cards
+            cards.forEach(c => {
+                c.classList.remove('active');
+                c.style.border = '2px solid transparent';
+            });
+            
+            // Add active class to clicked card
+            this.classList.add('active');
+            
+            // Get protocol type from data attribute
+            const protocol = this.getAttribute('data-protocol');
+            
+            // Add dramatic border color based on protocol type
+            if (protocol === 'CONTINUOUS') {
+                this.style.border = '2px solid var(--bs-success)';
+            } else if (protocol === 'PULSED') {
+                this.style.border = '2px solid var(--bs-danger)';
+            } else if (protocol === 'METRONOMIC') {
+                this.style.border = '2px solid var(--bs-info)';
+            } else if (protocol === 'ADAPTIVE') {
+                this.style.border = '2px solid var(--bs-primary)';
+            }
+            
+            // Set the hidden input value
+            protocolInput.value = protocol;
+            
+            // Trigger update to show dramatic changes
+            updateProtocolVisualization();
+            
+            // Add visual animation for feedback
+            this.classList.add('pulse-animation');
+            setTimeout(() => {
+                this.classList.remove('pulse-animation');
+            }, 700);
+        });
+    });
+}
+
+/**
+ * Set up regimen radio buttons with info panels
+ */
+function setupRegimenRadioButtons() {
+    // Get all regimen radio buttons
+    const radios = document.querySelectorAll('.regimen-radio');
+    const regimenInput = document.getElementById('treatment-regimen');
+    
+    // Get all info panels
+    const infoPanels = document.querySelectorAll('[id$="-info"]');
+    
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Set the hidden input value
+            regimenInput.value = this.value;
+            
+            // Hide all info panels
+            infoPanels.forEach(panel => panel.classList.add('d-none'));
+            
+            // Show selected info panel
+            const infoPanel = document.getElementById(`${this.value}-info`);
+            if (infoPanel) {
+                infoPanel.classList.remove('d-none');
+            }
+            
+            // Update visualization
+            updateProtocolVisualization();
+        });
+    });
+}
+
+/**
  * Update the protocol visualization based on current selections
  */
 function updateProtocolVisualization() {
-    // Get current protocol selections
-    const regimenSelect = document.getElementById('treatment-regimen');
-    const protocolSelect = document.getElementById('treatment-protocol');
+    // Get current protocol selections - uses the hidden input values now
+    const regimenInput = document.getElementById('treatment-regimen');
+    const protocolInput = document.getElementById('treatment-protocol');
     const frequencySlider = document.getElementById('dose-frequency');
     const intensitySlider = document.getElementById('dose-intensity');
     const protocolBadge = document.getElementById('protocol-badge');
     
-    // Get selected values
-    const selectedRegimen = regimenSelect.value;
-    const selectedProtocol = protocolSelect.value;
+    // Get values
+    const selectedRegimen = regimenInput.value;
+    const selectedProtocol = protocolInput.value;
     const cycleLength = parseInt(frequencySlider.value);
     const doseIntensity = parseFloat(intensitySlider.value);
     
-    // Update protocol badge with vivid styling
+    // Update slider display values
+    const frequencyValueDisplay = document.getElementById('dose-frequency-value');
+    const intensityValueDisplay = document.getElementById('dose-intensity-value');
+    
+    if (frequencyValueDisplay) {
+        frequencyValueDisplay.textContent = `${cycleLength} DAYS`;
+    }
+    
+    if (intensityValueDisplay) {
+        intensityValueDisplay.textContent = `${Math.round(doseIntensity * 100)}%`;
+    }
+    
+    // Update protocol badge with dramatic styling
     if (protocolBadge) {
-        // Remove all previous protocol classes
-        protocolBadge.className = 'protocol-badge';
-        // Add new protocol-specific class
-        protocolBadge.classList.add(`protocol-badge-${selectedProtocol.toLowerCase()}`);
-        // Update badge text
-        protocolBadge.textContent = selectedProtocol;
+        // Set badge text
+        protocolBadge.textContent = `${selectedProtocol} + ${selectedRegimen.toUpperCase()}`;
+        
+        // Change badge color based on protocol
+        protocolBadge.className = 'badge px-3 py-2';
+        
+        if (selectedProtocol === 'CONTINUOUS') {
+            protocolBadge.classList.add('bg-success');
+        } else if (selectedProtocol === 'PULSED') {
+            protocolBadge.classList.add('bg-danger');
+        } else if (selectedProtocol === 'METRONOMIC') {
+            protocolBadge.classList.add('bg-info');
+        } else if (selectedProtocol === 'ADAPTIVE') {
+            protocolBadge.classList.add('bg-primary');
+        }
     }
     
     // Get base effects from regimen
@@ -138,54 +245,86 @@ function updateProtocolVisualization() {
     // Get protocol multipliers
     const protocolMods = protocolEffects.protocols[selectedProtocol] || protocolEffects.protocols['PULSED'];
     
-    // Calculate adjusted effects with DRAMATIC differences
-    // Apply stronger modifiers to make differences more obvious
-    const intensityModifier = Math.pow(doseIntensity, 1.5); // Exaggerate intensity effect
+    // SUPER DRAMATIC differences - apply stronger modifiers to make differences obvious on screen
+    const intensityModifier = Math.pow(doseIntensity, 2.0); // Greatly exaggerate intensity effect
     
-    // Add dramatic randomization to make each change feel more significant (±10%)
-    const dramaticFactor = (param) => param * (0.9 + (Math.random() * 0.2));
+    // Add dramatic randomization (±15%) to make each change feel significant
+    const dramaticFactor = (param) => param * (0.85 + (Math.random() * 0.3));
     
-    // Calculate sensitive cell effect with dramatic differences
+    // Protocol-specific boosters to create MAJOR visual differentiation
+    let protocolBoost = {
+        sensitive: 1.0,
+        resistant: 1.0,
+        stem: 1.0,
+        immune: 1.0,
+        toxicity: 1.0,
+        resistance: 1.0
+    };
+    
+    // Set dramatically different boosts for each protocol type
+    if (selectedProtocol === 'CONTINUOUS') {
+        protocolBoost.sensitive = 0.6;  // Much lower sensitive cell effect
+        protocolBoost.immune = 1.3;     // Better immune effect
+        protocolBoost.toxicity = 0.5;   // Much lower toxicity
+        protocolBoost.resistance = 0.4; // Much lower resistance development
+    } else if (selectedProtocol === 'PULSED') {
+        protocolBoost.sensitive = 1.8;  // Much higher sensitive cell effect
+        protocolBoost.immune = 0.5;     // Much worse immune effect
+        protocolBoost.toxicity = 1.7;   // Much higher toxicity
+        protocolBoost.resistance = 1.8; // Much higher resistance development
+    } else if (selectedProtocol === 'METRONOMIC') {
+        protocolBoost.stem = 1.4;       // Much better stem cell effect
+        protocolBoost.immune = 1.8;     // Dramatically better immune effect
+        protocolBoost.toxicity = 0.4;   // Much lower toxicity
+    } else if (selectedProtocol === 'ADAPTIVE') {
+        protocolBoost.resistant = 1.6;  // Much better resistant cell effect
+        protocolBoost.stem = 1.3;       // Better stem cell effect
+        protocolBoost.resistance = 0.3; // Dramatically lower resistance development
+    }
+    
+    // Calculate effects with extreme protocol differentiation
     const sensitiveEffect = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.sensitiveEffect * protocolMods.sensitiveMultiplier * intensityModifier
+        baseEffects.sensitiveEffect * protocolMods.sensitiveMultiplier * intensityModifier * protocolBoost.sensitive
     )));
     
-    // Resistant cell effect - make protocol differences more dramatic
     const resistantEffect = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.resistantEffect * protocolMods.resistantMultiplier * intensityModifier
+        baseEffects.resistantEffect * protocolMods.resistantMultiplier * intensityModifier * protocolBoost.resistant
     )));
     
-    // Stem cell effect - exaggerate protocol impact
     const stemEffect = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.stemEffect * protocolMods.stemMultiplier * intensityModifier
+        baseEffects.stemEffect * protocolMods.stemMultiplier * intensityModifier * protocolBoost.stem
     )));
     
-    // Make cycle length have more dramatic impact - greatly exaggerated effect
-    // Will make short cycles MUCH more potent than long ones
-    const cycleFactor = Math.pow(1.0 + ((14 - cycleLength) / 14), 2); 
+    // Make cycle length have extreme impact - massively exaggerated effect
+    const cycleFactor = Math.pow(1.0 + ((14 - cycleLength) / 10), 2); 
     
-    // Immune effect - make differences more dramatic
     const immuneEffect = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.immuneEffect * protocolMods.immuneMultiplier * cycleFactor
+        baseEffects.immuneEffect * protocolMods.immuneMultiplier * cycleFactor * protocolBoost.immune
     )));
     
-    // Toxicity increases with dose intensity - exaggerated effect
     const toxicityEffect = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.toxicity * protocolMods.toxicityMultiplier * intensityModifier * 1.2
+        baseEffects.toxicity * protocolMods.toxicityMultiplier * intensityModifier * 1.5 * protocolBoost.toxicity
     )));
     
-    // Resistance development is dramatically influenced by protocol type
     const resistanceDev = Math.min(100, Math.round(dramaticFactor(
-        baseEffects.resistanceDev * protocolMods.resistanceDevMultiplier
+        baseEffects.resistanceDev * protocolMods.resistanceDevMultiplier * protocolBoost.resistance
     )));
     
-    // Update progress bars
+    // Update progress bars with animation
     updateProgressBar('sensitive-effect', sensitiveEffect);
     updateProgressBar('resistant-effect', resistantEffect);
     updateProgressBar('stem-effect', stemEffect);
     updateProgressBar('immune-effect', immuneEffect);
     updateProgressBar('toxicity-effect', toxicityEffect);
     updateProgressBar('resistance-dev-effect', resistanceDev);
+    
+    // Update progress bar text values
+    document.getElementById('sensitive-effect-value').textContent = `${sensitiveEffect}%`;
+    document.getElementById('resistant-effect-value').textContent = `${resistantEffect}%`;
+    document.getElementById('stem-effect-value').textContent = `${stemEffect}%`;
+    document.getElementById('immune-effect-value').textContent = `${immuneEffect}%`;
+    document.getElementById('toxicity-effect-value').textContent = `${toxicityEffect}%`;
+    document.getElementById('resistance-dev-effect-value').textContent = `${resistanceDev}%`;
     
     // Update protocol description
     updateProtocolDescription(selectedProtocol, selectedRegimen, cycleLength, doseIntensity);
