@@ -315,30 +315,10 @@ function resetParameters() {
  * @returns {Object} - Object containing all simulation parameters
  */
 function collectParameters() {
-    // Get patient demographics
-    const patientAge = document.getElementById('patient-age-direct') ? 
-                      parseInt(document.getElementById('patient-age-direct').value) :
-                      parseInt(document.getElementById('patient-age').value);
-    
-    const patientGender = document.getElementById('gender-male').checked ? 'male' : 'female';
-    const patientWeight = parseInt(document.getElementById('patient-weight').value);
-    const performanceStatus = parseInt(document.getElementById('performance-status').value);
-    
-    // Get comorbidities
-    const comorbidities = [];
-    if (document.getElementById('comorbidity-diabetes').checked) comorbidities.push('diabetes');
-    if (document.getElementById('comorbidity-hypertension').checked) comorbidities.push('hypertension');
-    if (document.getElementById('comorbidity-cardiac').checked) comorbidities.push('cardiac');
-    
-    // Get prior treatments
-    const priorTreatments = [];
-    if (document.getElementById('prior-chemo').checked) priorTreatments.push('chemotherapy');
-    if (document.getElementById('prior-radiation').checked) priorTreatments.push('radiation');
-    
-    // Get disease characteristics
-    const tumorType = document.getElementById('tumor-type').value;
-    const diseaseStage = parseInt(document.getElementById('disease-stage').value);
-    
+    // Get patient parameters 
+    const patientAge = document.getElementById('patient-age') ? 
+                      parseInt(document.getElementById('patient-age').value) : 55;
+                      
     // Get cell population values
     const sensitiveCells = parseInt(document.getElementById('sensitive-cells').value);
     const resistantCells = parseInt(document.getElementById('resistant-cells').value);
@@ -346,7 +326,6 @@ function collectParameters() {
     const immuneCells = parseInt(document.getElementById('immune-cells').value);
     
     // Get treatment protocol parameters
-    const treatmentRegimen = document.getElementById('treatment-regimen').value;
     const treatmentProtocol = document.getElementById('treatment-protocol').value;
     const drugStrength = parseFloat(document.getElementById('drug-strength').value);
     const drugDecay = parseFloat(document.getElementById('drug-decay').value);
@@ -363,7 +342,7 @@ function collectParameters() {
     const chaosLevel = parseFloat(document.getElementById('chaos-level').value);
     const timeSteps = parseInt(document.getElementById('time-steps').value);
     
-    // Get game matrix values - ensure all rows have the same length
+    // Use default game matrix values
     const gameMatrix = [
         [1.0, 0.7, 0.8, 0.3],
         [0.9, 0.6, 0.7, 0.4],
@@ -371,21 +350,8 @@ function collectParameters() {
         [0.0, 0.0, 0.0, 0.0]
     ];
     
-    // Only update the existing matrix inputs (3x3 section)
-    const matrixInputs = document.querySelectorAll('.matrix-input');
-    matrixInputs.forEach(input => {
-        const row = parseInt(input.dataset.row);
-        const col = parseInt(input.dataset.col);
-        if (row < 3 && col < 3) {  // Only for the visible 3x3 matrix in the UI
-            gameMatrix[row][col] = parseFloat(input.value);
-        }
-    });
-    
-    // Clinical patient factors that affect simulation
-    let organFunction = 1.0;
-    if (comorbidities.includes('cardiac') || comorbidities.includes('diabetes')) {
-        organFunction = 0.8;
-    }
+    // Default organ function
+    const organFunction = 1.0;
     
     // Return complete parameter set
     return {

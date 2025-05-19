@@ -20,10 +20,10 @@ def index():
 def simulate():
     """Run the cancer evolution simulation based on provided parameters"""
     try:
-        data = request.json
+        data = request.json if request.json else {}
         logger.debug(f"Received simulation parameters: {data}")
         
-        # Extract parameters from request
+        # Extract parameters from request with safety checks
         initial_cells = {
             'sensitive': int(data.get('sensitive_cells', 100)),
             'resistant': int(data.get('resistant_cells', 10)),
@@ -31,14 +31,14 @@ def simulate():
             'immunecell': int(data.get('immune_cells', 50))
         }
         
-        # Handle treatment protocol selection
+        # Handle treatment protocol selection with safety check
         protocol_name = data.get('treatment_protocol', 'CONTINUOUS')
         try:
             treatment_protocol = TreatmentProtocol[protocol_name]
         except (KeyError, ValueError):
             treatment_protocol = TreatmentProtocol.CONTINUOUS
         
-        # Create patient profile data
+        # Create patient profile data with safety checks
         patient_data = {
             'age': int(data.get('patient_age', 55)),
             'metabolism': float(data.get('patient_metabolism', 1.0)), 
@@ -46,7 +46,7 @@ def simulate():
             'organ_function': float(data.get('patient_organ_function', 1.0))
         }
         
-        # Build complete parameters dictionary
+        # Build complete parameters dictionary with safety checks
         parameters = {
             # Standard simulation parameters
             'drug_strength': float(data.get('drug_strength', 0.8)),
