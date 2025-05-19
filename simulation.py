@@ -191,26 +191,78 @@ class CancerSimulation:
             comorbidity_factor *= 1.15
         if 'hypertension' in comorbidities:
             comorbidity_factor *= 1.1
+        
+        # Apply treatment protocol effects if available (from update_drug_level method)
+        protocol_effects = getattr(self, 'protocol_effects', {
+            'sensitive_multiplier': 1.0,
+            'resistant_multiplier': 1.0, 
+            'stemcell_multiplier': 1.0,
+            'immune_boost': 1.0,
+            'immune_penalty': 1.0,
+            'resistance_development': 1.0,
+            'toxicity': 1.0
+        })
             
         # Calculate effective drug strength based on all factors
         effective_drug_level = self.drug_level * self.drug_strength * (1.0/drug_clearance) 
         effective_drug_level *= (1.0/disease_stage_factor) * (1.0/tumor_type_factor) * (1.0/comorbidity_factor)
         
-        # Apply drug effect with dramatically increased patient-specific effects
+        # Apply protocol-specific effects - this makes different treatments have dramatically different outcomes
+        sensitive_multiplier = protocol_effects.get('sensitive_multiplier', 1.0)
+        resistant_multiplier = protocol_effects.get('resistant_multiplier', 1.0)
+        stemcell_multiplier = protocol_effects.get('stemcell_multiplier', 1.0)
+        
+        # Apply drug effect with dramatically increased patient-specific and protocol-specific effects
         drug_effect = np.array([
-            effective_drug_level,             # Full effect on sensitive cells
-            effective_drug_level * 0.2,       # Reduced effect on resistant cells 
-            effective_drug_level * 0.5,       # Moderate effect on stem cells
-            0.0                               # No drug effect on immune cells
+            effective_drug_level * sensitive_multiplier,             # Effect on sensitive cells, modified by protocol
+            effective_drug_level * 0.2 * resistant_multiplier,       # Effect on resistant cells, modified by protocol
+            effective_drug_level * 0.5 * stemcell_multiplier,        # Effect on stem cells, modified by protocol
+            0.0                                                      # No drug effect on immune cells
         ])
         
-        # Adjust immune response based on patient profile
+        # Adjust immune response based on patient profile and protocol effects
         patient_immune_modifier = self.patient.get_immune_modifier()
-        base_immune_strength = self.immune_strength * patient_immune_modifier
+        
+        # Get protocol effects on immune function
+        immune_boost = protocol_effects.get('immune_boost', 1.0)  # Treatment boosts immune function
+        immune_penalty = protocol_effects.get('immune_penalty', 1.0)  # Treatment suppresses immune function
+        
+        # Combined immune effect from patient and protocol
+        base_immune_strength = self.immune_strength * patient_immune_modifier * immune_boost * immune_penalty
+        
+        # Performance status greatly affects immune function
+        perf_status = patient_data.get('performance_status', 1)
+        perf_immune_factor = 1.0
+        if perf_status == 0:
+            perf_immune_factor = 1.3  # Excellent performance status improves immune function
+        elif perf_status == 1:
+            perf_immune_factor = 1.0  # Normal
+        elif perf_status == 2:
+            perf_immune_factor = 0.7  # Reduced immune function
+        elif perf_status >= 3:
+            perf_immune_factor = 0.4  # Severely compromised immune function
+            
+        # Apply performance status effect
+        base_immune_strength *= perf_immune_factor
         
         # Scale immune effect based on immune cell population
         immune_population_factor = min(1.0, pop_vector[3] / 100.0)
         effective_immune_strength = base_immune_strength * immune_population_factor
+        
+        # Protocol-specific immune effects (e.g., METRONOMIC is immune-friendly)
+        # Treatment regimen effects on immune response
+        treatment_regimen = patient_data.get('treatment_regimen', 'folfox')
+        regimen_immune_factor = 1.0
+        if treatment_regimen == 'folfox':
+            regimen_immune_factor = 0.9  # Some immune suppression
+        elif treatment_regimen == 'folfiri':
+            regimen_immune_factor = 0.8  # More immune suppression
+        elif treatment_regimen == 'capox':
+            regimen_immune_factor = 0.95  # Less immune suppression
+        elif treatment_regimen == 'custom':
+            regimen_immune_factor = 1.1  # Potential immunotherapy component
+            
+        effective_immune_strength *= regimen_immune_factor
         
         # Apply immune effect: depends on cell visibility to immune system
         immune_effect = np.array([
@@ -388,43 +440,120 @@ class CancerSimulation:
     def update_drug_level(self, current_day: int):
         """
         Update drug concentration based on pharmacokinetic decay and dosing schedule.
+        Each protocol has dramatically different effects on tumor control and resistance.
         
         Args:
             current_day: Current simulation day
         """
+        # Retrieve the treatment regimen from patient data
+        treatment_regimen = self.patient_data.get('treatment_regimen', 'folfox')
+        
         # Apply patient-specific drug clearance
         clearance_modifier = self.patient.get_drug_clearance_modifier()
         effective_decay = self.drug_decay * clearance_modifier
         
-        # Standard decay
+        # Create protocol-specific effects dictionary if it doesn't exist
+        if not hasattr(self, 'protocol_effects'):
+            self.protocol_effects = {
+                'sensitive_multiplier': 1.0,
+                'resistant_multiplier': 1.0, 
+                'stemcell_multiplier': 1.0,
+                'immune_boost': 1.0,
+                'immune_penalty': 1.0,
+                'resistance_development': 1.0,
+                'toxicity': 1.0
+            }
+        
+        # Apply TREATMENT REGIMEN effects (different drug combinations)
+        if treatment_regimen == 'folfox':
+            # FOLFOX: 5-FU, Leucovorin, and Oxaliplatin - good for sensitive cells
+            self.protocol_effects['sensitive_multiplier'] = 1.5  # Better on sensitive cells
+            self.protocol_effects['resistant_multiplier'] = 0.8  # Less effective on resistant
+            self.protocol_effects['immune_boost'] = 0.9         # Some immune suppression
+            effective_decay *= 1.0                              # Standard clearance
+            
+        elif treatment_regimen == 'folfiri':
+            # FOLFIRI: 5-FU, Leucovorin, and Irinotecan - better for resistant disease
+            self.protocol_effects['sensitive_multiplier'] = 1.2  # Moderate on sensitive
+            self.protocol_effects['resistant_multiplier'] = 1.3  # Better on resistant cells
+            self.protocol_effects['stemcell_multiplier'] = 1.1   # Slightly better against stem cells
+            effective_decay *= 1.1                               # Faster clearance
+            
+        elif treatment_regimen == 'capox':
+            # CAPOX: Capecitabine and Oxaliplatin - oral, longer effect
+            self.protocol_effects['sensitive_multiplier'] = 1.3  # Good on sensitive cells
+            self.protocol_effects['immune_boost'] = 1.1          # Less immune suppression
+            effective_decay *= 0.8                               # Slower clearance (extended release)
+            
+        elif treatment_regimen == 'custom':
+            # Custom experimental regimen - balanced effects
+            self.protocol_effects['sensitive_multiplier'] = 1.3  # Good on sensitive
+            self.protocol_effects['resistant_multiplier'] = 1.2  # Somewhat effective on resistant
+            self.protocol_effects['stemcell_multiplier'] = 1.1   # Some effect on stem cells
+            self.protocol_effects['immune_boost'] = 1.2          # Immune boosting (immunotherapy component)
+        
+        # Standard drug decay based on pharmacokinetics
         self.drug_level *= (1 - effective_decay)
         
-        # Check if it's time for a new dose based on treatment protocol
+        # Apply DOSING PROTOCOL effects (schedule of administration)
         if self.treatment_protocol == TreatmentProtocol.CONTINUOUS:
-            # Continuous dosing (maintains a constant level)
-            if self.drug_level < (self.drug_strength * 0.5):
-                self.drug_level = self.drug_strength
+            # CONTINUOUS PROTOCOL: Maintains constant level, prevents resistance
+            if self.drug_level < (self.drug_strength * 0.6):
+                self.drug_level = self.drug_strength * 0.8
+                
+            # Protocol-specific modifiers: better resistance prevention, milder toxicity
+            self.protocol_effects['resistance_development'] = 0.7  # 30% less resistance development
+            self.protocol_effects['toxicity'] = 0.8               # 20% less toxicity
+            self.protocol_effects['immune_penalty'] = 0.9         # 10% less immune suppression
                 
         elif self.treatment_protocol == TreatmentProtocol.PULSED:
-            # Pulsed dosing (high doses at fixed intervals)
+            # PULSED PROTOCOL: High peaks, low troughs - standard approach
             if current_day >= self.next_dose_day:
-                self.drug_level = self.drug_strength * self.dose_intensity
+                self.drug_level = self.drug_strength * 1.2 * self.dose_intensity  # Higher peak
                 self.next_dose_day = current_day + self.dose_frequency
+                
+            # Protocol-specific modifiers: stronger on sensitive cells, more toxic
+            self.protocol_effects['sensitive_multiplier'] *= 1.3  # Amplified effect on sensitive
+            self.protocol_effects['toxicity'] = 1.3               # 30% more toxicity
+            self.protocol_effects['immune_penalty'] = 0.7         # 30% more immune suppression
                 
         elif self.treatment_protocol == TreatmentProtocol.METRONOMIC:
-            # Metronomic dosing (frequent, low doses)
+            # METRONOMIC PROTOCOL: Frequent low doses - antiangiogenic, immune-friendly
             if current_day >= self.next_dose_day:
-                self.drug_level = self.drug_strength * 0.6 * self.dose_intensity
-                frequency_divisor = self.dose_frequency/3
-                adjusted_frequency = 1 if frequency_divisor < 1 else int(frequency_divisor)
+                self.drug_level = self.drug_strength * 0.5 * self.dose_intensity  # Lower peak
+                # Much more frequent dosing
+                frequency_divisor = max(1, self.dose_frequency/3)
+                adjusted_frequency = int(frequency_divisor)
                 self.next_dose_day = current_day + adjusted_frequency
                 
+            # Protocol-specific modifiers: milder but sustained, immune-friendly
+            self.protocol_effects['resistance_development'] = 0.8  # 20% less resistance
+            self.protocol_effects['toxicity'] = 0.6               # 40% less toxicity
+            self.protocol_effects['immune_boost'] = 1.4           # 40% immune enhancement
+            self.protocol_effects['stemcell_multiplier'] *= 1.2   # Better against stem cells
+                
         elif self.treatment_protocol == TreatmentProtocol.ADAPTIVE:
-            # Adaptive therapy (treat only when tumor exceeds threshold)
+            # ADAPTIVE PROTOCOL: Based on tumor burden - evolutionary approach
             tumor_cells = sum(self.populations.values()) - self.populations['immunecell']
-            if tumor_cells > self.treatment_threshold and current_day >= self.next_dose_day:
-                self.drug_level = self.drug_strength * self.dose_intensity
+            self.adaptive_threshold = 500  # Tumor burden threshold
+            
+            if current_day >= self.next_dose_day:
+                if tumor_cells > self.adaptive_threshold:
+                    # High burden = high dose
+                    self.drug_level = self.drug_strength * 1.1 * self.dose_intensity
+                else:
+                    # Low burden = maintenance dose
+                    self.drug_level = self.drug_strength * 0.3 * self.dose_intensity
+                
                 self.next_dose_day = current_day + self.dose_frequency
+                
+            # Protocol-specific modifiers: balances sensitive/resistant competition
+            self.protocol_effects['resistance_development'] = 0.5  # 50% less resistance
+            self.protocol_effects['sensitive_multiplier'] *= 0.9   # Slightly reduced sensitive killing
+            self.protocol_effects['toxicity'] = 0.8               # 20% less toxicity
+            
+        # Store the effects for use in fitness calculation
+        self.current_protocol_effects = self.protocol_effects.copy()
     
     def run_simulation(self) -> Dict[str, List]:
         """
