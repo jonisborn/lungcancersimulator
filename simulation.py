@@ -86,13 +86,15 @@ class CancerSimulation:
         self.dose_frequency = parameters.get('dose_frequency', 7)  # Days between doses
         self.dose_intensity = parameters.get('dose_intensity', 1.0)  # Relative dose intensity
         
-        # Patient-specific parameters
-        patient_data = parameters.get('patient', {})
+        # Store complete patient_data for reference in other methods
+        self.patient_data = parameters.get('patient', {})
+        
+        # Create the patient profile object
         self.patient = PatientProfile(
-            age=patient_data.get('age', 55),
-            metabolism=patient_data.get('metabolism', 1.0),
-            immune_status=patient_data.get('immune_status', 1.0),
-            organ_function=patient_data.get('organ_function', 1.0)
+            age=self.patient_data.get('age', 55),
+            metabolism=self.patient_data.get('metabolism', 1.0),
+            immune_status=self.patient_data.get('immune_status', 1.0),
+            organ_function=self.patient_data.get('organ_function', 1.0)
         )
         
         # Clinical cancer type parameters
