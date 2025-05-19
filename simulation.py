@@ -150,12 +150,56 @@ class CancerSimulation:
         # Calculate fitness based on evolutionary game theory
         base_fitness = np.dot(self.game_matrix, freq_vector)
         
-        # Apply drug effect: reduces fitness of sensitive cells, less impact on resistant
+        # Get patient-specific factors for drug effects
+        drug_clearance = self.patient.get_drug_clearance_modifier()
+        
+        # Get patient-specific data from parameters if available
+        patient_data = getattr(self, 'patient_data', {}) 
+        
+        # Disease stage dramatically affects drug response (stronger effect)
+        disease_stage_factor = 1.0
+        if patient_data.get('disease_stage') == 1:
+            disease_stage_factor = 0.6  # Early stage responds better
+        elif patient_data.get('disease_stage') == 2:
+            disease_stage_factor = 0.8
+        elif patient_data.get('disease_stage') == 3:
+            disease_stage_factor = 1.0  # Baseline
+        elif patient_data.get('disease_stage') == 4:
+            disease_stage_factor = 1.4  # Metastatic - less responsive
+            
+        # Tumor type affects drug response
+        tumor_type_factor = 1.0
+        if patient_data.get('tumor_type') == 'colorectal':
+            tumor_type_factor = 1.0  # Baseline
+        elif patient_data.get('tumor_type') == 'breast':
+            tumor_type_factor = 0.8  # More responsive to therapy
+        elif patient_data.get('tumor_type') == 'lung':
+            tumor_type_factor = 1.3  # Less responsive
+        elif patient_data.get('tumor_type') == 'prostate':
+            tumor_type_factor = 0.9  # Moderately responsive
+        elif patient_data.get('tumor_type') == 'melanoma':
+            tumor_type_factor = 1.2  # Less responsive
+            
+        # Comorbidities affect drug efficacy
+        comorbidity_factor = 1.0
+        comorbidities = patient_data.get('comorbidities', [])
+        if 'diabetes' in comorbidities:
+            comorbidity_factor *= 1.2  # Reduced efficacy
+        if 'cardiac' in comorbidities:
+            comorbidity_factor *= 1.15
+        if 'hypertension' in comorbidities:
+            comorbidity_factor *= 1.1
+            
+        # Calculate effective drug strength based on all factors
+        effective_drug_level = self.drug_level * self.drug_strength * (1.0/drug_clearance) 
+        effective_drug_level *= (1.0/disease_stage_factor) * (1.0/tumor_type_factor) * (1.0/comorbidity_factor)
+        
+        # Apply drug effect with dramatically increased patient-specific effects
         drug_effect = np.array([
-            self.drug_level,             # Full effect on sensitive cells
-            self.drug_level * 0.2,       # Reduced effect on resistant cells 
-            self.drug_level * 0.5,       # Moderate effect on stem cells
-            0.0                          # No drug effect on immune cells
+            effective_drug_level,             # Full effect on sensitive cells
+            effective_drug_level * 0.2,       # Reduced effect on resistant cells 
+            effective_drug_level * 0.5,       # Moderate effect on stem cells
+            0.0                               # No drug effect on immune cells
         ])
         
         # Adjust immune response based on patient profile
@@ -253,7 +297,7 @@ class CancerSimulation:
         
     def calculate_survival_probability(self, pop_vector: np.ndarray) -> float:
         """
-        Estimate survival probability based on tumor burden and composition.
+        Estimate survival probability based on tumor burden, composition, and extensive patient factors.
         
         Args:
             pop_vector: Current population sizes for each cell type
@@ -266,20 +310,78 @@ class CancerSimulation:
         
         # Baseline survival based on tumor size
         if total_tumor < 1:  # Complete response
-            base_survival = 0.95
+            base_survival = 0.98  # Near complete survival for total elimination
         else:
-            # Logistic decay function for survival as tumor increases
-            base_survival = 0.95 / (1 + math.exp(0.001 * (total_tumor - 5000)))
+            # Sharper logistic decay for more dramatic effect
+            base_survival = 0.95 / (1 + math.exp(0.002 * (total_tumor - 3000)))
         
         # Adjust based on composition (stem cells are worse prognosis)
         stem_fraction = pop_vector[2] / total_tumor if total_tumor > 0 else 0
-        composition_factor = 1.0 - (stem_fraction * 0.5)  # Up to 50% reduction for all stem cells
+        composition_factor = 1.0 - (stem_fraction * 0.7)  # Up to 70% reduction for stem cell-dominant tumors
         
-        # Patient age adjustment (simplified)
-        age_adjustment = self.patient.age - 60
-        age_factor = 1.0 - (age_adjustment / 100 if age_adjustment > 0 else 0)
+        # Get patient-specific data from parameters if available
+        patient_data = getattr(self, 'patient_data', {})
         
-        return min(0.99, base_survival * composition_factor * age_factor)
+        # Patient age has strong effect on survival
+        age = self.patient.age
+        age_factor = 1.0
+        if age < 40:
+            age_factor = 1.2  # Better prognosis for young patients
+        elif age < 60:
+            age_factor = 1.0  # Baseline
+        elif age < 75:
+            age_factor = 0.8  # Reduced survival
+        else:
+            age_factor = 0.6  # Significantly reduced survival
+            
+        # Disease stage has major impact on survival
+        stage_factor = 1.0
+        disease_stage = patient_data.get('disease_stage', 3)  # Default to stage 3
+        if disease_stage == 1:
+            stage_factor = 1.8  # Much better prognosis
+        elif disease_stage == 2:
+            stage_factor = 1.4
+        elif disease_stage == 3:
+            stage_factor = 1.0  # Reference
+        elif disease_stage == 4:
+            stage_factor = 0.5  # Metastatic disease - dramatically worse prognosis
+            
+        # Tumor type affects survival (with much higher differences)
+        tumor_type_factor = 1.0
+        tumor_type = patient_data.get('tumor_type', 'colorectal')
+        if tumor_type == 'breast':
+            tumor_type_factor = 1.3  # Better prognosis
+        elif tumor_type == 'lung':
+            tumor_type_factor = 0.7  # Worse prognosis
+        elif tumor_type == 'prostate':
+            tumor_type_factor = 1.4  # Better prognosis
+        elif tumor_type == 'melanoma':
+            tumor_type_factor = 0.8  # Worse prognosis
+            
+        # Performance status dramatically affects survival
+        perf_status_factor = 1.0
+        perf_status = patient_data.get('performance_status', 1)
+        if perf_status == 0:
+            perf_status_factor = 1.3  # Excellent condition
+        elif perf_status == 1:
+            perf_status_factor = 1.0  # Baseline
+        elif perf_status == 2:
+            perf_status_factor = 0.7  # Reduced survival
+        elif perf_status >= 3:
+            perf_status_factor = 0.4  # Severely reduced survival
+            
+        # Comorbidities significantly reduce survival
+        comorbidity_factor = 1.0
+        comorbidities = patient_data.get('comorbidities', [])
+        if comorbidities:
+            # Each comorbidity has a substantial impact
+            comorbidity_factor = max(0.5, 1.0 - (len(comorbidities) * 0.15))
+            
+        # Calculate final survival with all factors having stronger effects
+        survival = base_survival * composition_factor * age_factor * stage_factor * tumor_type_factor * perf_status_factor * comorbidity_factor
+        
+        # Ensure result is in valid range
+        return min(0.99, max(0.01, survival))
 
     def update_drug_level(self, current_day: int):
         """
