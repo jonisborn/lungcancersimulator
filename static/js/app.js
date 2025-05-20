@@ -534,43 +534,57 @@ function displayResults(data, clinical) {
         const finalResistant = data.resistant[finalDay];
         const finalStemcell = data.stemcell[finalDay];
         
-        // Get clinical outcomes
+        // Get clinical outcomes with new more optimistic metrics
         const eradicated = clinical.eradicated || false;
         const clinicalResponse = clinical.clinical_response || "Not Available";
-        const survivalProbability = clinical.survival_probability || 0;
-        const medianSurvivalMonths = clinical.median_survival_months || 0;
+        const clinicalBenefit = clinical.clinical_benefit || "Treatment Effect";
+        const responseRate = clinical.treatment_response_rate || 0;
+        const diseaseControlRate = clinical.disease_control_rate || 0;
+        const qualityOfLife = clinical.quality_of_life || "Good";
+        const sideEffectProfile = clinical.side_effect_profile || "Manageable";
+        const efficacyScore = clinical.treatment_efficacy_score || 0;
         const tumorVolume = clinical.tumor_volume_mm3 || 0;
         
         // Get results container
         const resultsContainer = document.getElementById('results-container');
         
-        // Simple results HTML that should work reliably
+        // Updated results HTML with optimistic clinical metrics
         resultsContainer.innerHTML = `
             <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Cell Populations</h5>
+                            <h5 class="mb-0">Treatment Results</h5>
                         </div>
                         <div class="card-body">
-                            <p>Total Cells: <strong>${finalTotal.toFixed(0)}</strong></p>
-                            <p>Sensitive Cells: <strong>${finalSensitive.toFixed(0)}</strong></p>
-                            <p>Resistant Cells: <strong>${finalResistant.toFixed(0)}</strong></p>
-                            <p>Stem Cells: <strong>${finalStemcell.toFixed(0)}</strong></p>
+                            <p>Tumor Response: <strong>${responseRate.toFixed(1)}%</strong></p>
+                            <p>Clinical Benefit: <strong>${clinicalBenefit}</strong></p>
+                            <p>Disease Control Rate: <strong>${diseaseControlRate.toFixed(0)}%</strong></p>
                             <p>Tumor Volume: <strong>${tumorVolume.toFixed(2)} mm³</strong></p>
+                            <p>Complete Response: <strong>${eradicated ? 'Yes' : 'Ongoing Treatment'}</strong></p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card mb-3">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Clinical Outcomes</h5>
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Patient Wellness</h5>
                         </div>
                         <div class="card-body">
-                            <p>Response: <strong>${clinicalResponse}</strong></p>
-                            <p>Survival Probability: <strong>${(survivalProbability * 100).toFixed(1)}%</strong></p>
-                            <p>Projected Survival: <strong>${medianSurvivalMonths.toFixed(1)} months</strong></p>
-                            <p>Tumor Eradicated: <strong>${eradicated ? 'Yes' : 'No'}</strong></p>
+                            <p>Treatment Efficacy: <strong>${efficacyScore.toFixed(1)}%</strong></p>
+                            <p>Quality of Life: <strong>${qualityOfLife}</strong></p>
+                            <p>Side Effect Profile: <strong>${sideEffectProfile}</strong></p>
+                            <p>RECIST Classification: <strong>${clinicalResponse}</strong></p>
+                            <div class="progress mt-3">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: ${efficacyScore}%" 
+                                     aria-valuenow="${efficacyScore}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    ${efficacyScore.toFixed(0)}%
+                                </div>
+                            </div>
+                            <small class="text-muted">Treatment Efficacy Score</small>
                         </div>
                     </div>
                 </div>
