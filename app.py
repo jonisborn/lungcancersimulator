@@ -180,8 +180,14 @@ def generate_optimistic_metrics(clinical_data, input_params):
     metrics['treatment_protocol'] = treatment_protocol
     
     # 1. Calculate Treatment Response Rate - significantly affected by disease stage and protocol
-    if start_tumor_burden > 0:
-        # Base response rate from tumor reduction
+    # Get eradication status - shouldn't show eradication for stage 4
+    if eradicated and disease_stage >= 4:
+        # Stage 4 shouldn't have eradication, that's unrealistic
+        eradicated = False
+        metrics['eradicated'] = False
+    
+    if start_tumor_burden > 0 and end_tumor_burden > 0:
+        # Base response rate from tumor reduction (real shrinkage amounts)
         base_response_rate = max(0, min(100, 100 * (1 - (end_tumor_burden / start_tumor_burden))))
         
         # Apply disease stage modifiers - earlier stages respond better to treatment
@@ -194,6 +200,8 @@ def generate_optimistic_metrics(clinical_data, input_params):
             stage_modifier = 1.0  # Standard response
         elif disease_stage >= 4:
             stage_modifier = 0.7  # Reduced response in advanced disease
+            # Cap response rate for stage 4 disease
+            base_response_rate = min(base_response_rate, 75)
             
         # Apply treatment protocol modifiers
         protocol_modifier = 1.0
@@ -206,78 +214,149 @@ def generate_optimistic_metrics(clinical_data, input_params):
         elif treatment_protocol == "PULSED":
             protocol_modifier = 1.0   # Standard pulsed approach (reference)
             
-        # Calculate final response rate with modifiers
-        response_rate = min(99, base_response_rate * stage_modifier * protocol_modifier)
+        # Calculate final response rate with modifiers, realistic for disease stage
+        if disease_stage == 4:
+            # Stage 4 - more limited and protocol-dependent response
+            if treatment_protocol == "ADAPTIVE":
+                response_rate = min(70, base_response_rate * stage_modifier * protocol_modifier)
+            elif treatment_protocol == "METRONOMIC":
+                response_rate = min(65, base_response_rate * stage_modifier * protocol_modifier)
+            elif treatment_protocol == "CONTINUOUS":
+                response_rate = min(60, base_response_rate * stage_modifier * protocol_modifier)
+            else:  # PULSED
+                response_rate = min(55, base_response_rate * stage_modifier * protocol_modifier)
+        else:
+            # Stages 1-3
+            response_rate = min(99, base_response_rate * stage_modifier * protocol_modifier)
+            
         metrics['treatment_response_rate'] = round(response_rate, 1)
     else:
-        # Default values based on stage
-        base_rate = 50
+        # Use realistic baseline values based on stage and protocol
         if disease_stage == 1:
-            base_rate = 80
+            base_rates = {
+                "ADAPTIVE": 85, 
+                "METRONOMIC": 80,
+                "CONTINUOUS": 78,
+                "PULSED": 75
+            }
         elif disease_stage == 2:
-            base_rate = 70
+            base_rates = {
+                "ADAPTIVE": 75, 
+                "METRONOMIC": 70,
+                "CONTINUOUS": 68,
+                "PULSED": 65
+            }
         elif disease_stage == 3:
-            base_rate = 60
+            base_rates = {
+                "ADAPTIVE": 65, 
+                "METRONOMIC": 60,
+                "CONTINUOUS": 58,
+                "PULSED": 55
+            }
         elif disease_stage >= 4:
-            base_rate = 40
-            
-        # Adjust by protocol
-        if treatment_protocol == "ADAPTIVE":
-            base_rate += 10
-        elif treatment_protocol == "METRONOMIC":
-            base_rate += 5
-            
-        metrics['treatment_response_rate'] = base_rate
+            base_rates = {
+                "ADAPTIVE": 55, 
+                "METRONOMIC": 50,
+                "CONTINUOUS": 45,
+                "PULSED": 40
+            }
+        
+        # Get base rate for this protocol or use default
+        metrics['treatment_response_rate'] = base_rates.get(treatment_protocol, 50)
         
     # 2. Calculate Disease Control Rate - varies by protocol and stage
+    # First, determine the actual clinical response based on tumor burden and stage
+    response_rate = metrics['treatment_response_rate']
+    clinical_benefit = ""
+    
+    # For Stage 4, eradication is not medically realistic
+    if disease_stage >= 4 and eradicated:
+        eradicated = False
+        metrics['eradicated'] = False
+        # Change clinical response to be more realistic for stage 4
+        if response_rate >= 60:
+            clinical_response = "Partial Response (PR)"
+        elif response_rate >= 30:
+            clinical_response = "Stable Disease (SD)"
+        else:
+            clinical_response = "Progressive Disease (PD)"
+    
+    # Match clinical response to the actual tumor reduction (more realistic)
     if eradicated:
         metrics['disease_control_rate'] = 100
         metrics['clinical_benefit'] = "Complete Tumor Response"
     elif clinical_response == "Complete Response (CR)":
-        metrics['disease_control_rate'] = 100
-        metrics['clinical_benefit'] = "Complete Tumor Response"
-    elif clinical_response == "Partial Response (PR)":
-        # Partial response varies by protocol
-        if treatment_protocol == "ADAPTIVE":
-            metrics['disease_control_rate'] = 90  # Best for adaptive
-        elif treatment_protocol == "METRONOMIC":
-            metrics['disease_control_rate'] = 85  # Very good for metronomic
-        elif treatment_protocol == "CONTINUOUS":
-            metrics['disease_control_rate'] = 80  # Good for continuous
+        # Even for CR, stage 4 would have lower control rate
+        if disease_stage >= 4:
+            metrics['disease_control_rate'] = 85
+            metrics['clinical_benefit'] = "Major Tumor Reduction" # More realistic for stage 4
         else:
-            metrics['disease_control_rate'] = 75  # Standard
+            metrics['disease_control_rate'] = 100
+            metrics['clinical_benefit'] = "Complete Tumor Response"
+    elif clinical_response == "Partial Response (PR)" or response_rate >= 50:
+        # If it shows >50% reduction but not marked as PR, treat as PR
+        
+        # Partial response varies by protocol and stage
+        if disease_stage >= 4:
+            # Stage 4 protocol effects
+            if treatment_protocol == "ADAPTIVE":
+                metrics['disease_control_rate'] = 75  # Best for adaptive in stage 4
+            elif treatment_protocol == "METRONOMIC":
+                metrics['disease_control_rate'] = 70  # Very good for metronomic in stage 4
+            elif treatment_protocol == "CONTINUOUS":
+                metrics['disease_control_rate'] = 65  # Good for continuous in stage 4
+            else:
+                metrics['disease_control_rate'] = 60  # Standard in stage 4
+        else:
+            # Earlier stages protocol effects
+            if treatment_protocol == "ADAPTIVE":
+                metrics['disease_control_rate'] = 90  # Best for adaptive
+            elif treatment_protocol == "METRONOMIC":
+                metrics['disease_control_rate'] = 85  # Very good for metronomic
+            elif treatment_protocol == "CONTINUOUS":
+                metrics['disease_control_rate'] = 80  # Good for continuous
+            else:
+                metrics['disease_control_rate'] = 75  # Standard
             
         metrics['clinical_benefit'] = "Major Tumor Reduction"
-    elif clinical_response == "Stable Disease (SD)":
+    elif clinical_response == "Stable Disease (SD)" or response_rate >= 20:
+        # If it shows >20% reduction but not marked as SD, treat as SD
+        
         # Stable disease control varies by stage and protocol
-        base_control = 60
         if disease_stage <= 2:
             base_control = 75  # Better control in earlier disease
+        elif disease_stage == 3:
+            base_control = 65  # Moderate control in stage 3
+        else:
+            base_control = 55  # More limited control in stage 4
         
         # Protocol effects on stable disease
         if treatment_protocol == "ADAPTIVE":
-            base_control += 15  # Best for adaptive
+            base_control += 10  # Best for adaptive
         elif treatment_protocol == "METRONOMIC":
-            base_control += 10  # Very good for metronomic
+            base_control += 5   # Very good for metronomic
             
         metrics['disease_control_rate'] = min(95, base_control)
         metrics['clinical_benefit'] = "Disease Stabilization"
     else:
         # Progressive disease - response still varies by stage and protocol
         response_rate_factor = min(1, metrics['treatment_response_rate'] / 100)
-        base_control = max(35, 50 * response_rate_factor)
+        
+        # Base control rate varies by stage
+        if disease_stage <= 2:
+            base_control = max(40, 50 * response_rate_factor)
+        elif disease_stage == 3:
+            base_control = max(35, 45 * response_rate_factor)
+        else:
+            base_control = max(30, 40 * response_rate_factor)
         
         # Protocol effects on progressive disease
         if treatment_protocol == "ADAPTIVE":
-            base_control += 10  # Best salvage with adaptive
+            base_control += 8  # Best salvage with adaptive
         elif treatment_protocol == "METRONOMIC":
-            base_control += 5   # Better salvage with metronomic
-        
-        # Stage effects
-        if disease_stage >= 4:
-            base_control -= 5   # More challenging with advanced disease
+            base_control += 5  # Better salvage with metronomic
             
-        metrics['disease_control_rate'] = min(70, base_control)
+        metrics['disease_control_rate'] = min(60, base_control)
         metrics['clinical_benefit'] = "Active Treatment Effect"
         
     # 3. Add quality of life impact based on treatment toxicity, protocol and disease stage
