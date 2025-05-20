@@ -544,9 +544,20 @@ function displayResults(data, clinical) {
         const sideEffectProfile = clinical.side_effect_profile || "Manageable";
         const efficacyScore = clinical.treatment_efficacy_score || 0;
         const tumorVolume = clinical.tumor_volume_mm3 || 0;
+        const responseDataSource = clinical.response_data_source || "Expected Outcomes";
+        const expectedResponseRange = clinical.expected_response_range || "";
+        const treatmentFreeInterval = clinical.treatment_free_interval || 0;
         
         // Get results container
         const resultsContainer = document.getElementById('results-container');
+        
+        // Create response display based on whether we have real measurements or just expectations
+        let responseDisplay = "";
+        if (responseDataSource === "Actual Measurements") {
+            responseDisplay = `<p>Tumor Response: <strong>${responseRate.toFixed(1)}%</strong> <span class="badge bg-info">Measured</span></p>`;
+        } else {
+            responseDisplay = `<p>Expected Response: <strong>${expectedResponseRange}</strong> <span class="badge bg-secondary">Protocol-based</span></p>`;
+        }
         
         // Updated results HTML with optimistic clinical metrics
         resultsContainer.innerHTML = `
@@ -557,9 +568,10 @@ function displayResults(data, clinical) {
                             <h5 class="mb-0">Treatment Results</h5>
                         </div>
                         <div class="card-body">
-                            <p>Tumor Response: <strong>${responseRate.toFixed(1)}%</strong></p>
+                            ${responseDisplay}
                             <p>Clinical Benefit: <strong>${clinicalBenefit}</strong></p>
                             <p>Disease Control Rate: <strong>${diseaseControlRate.toFixed(0)}%</strong></p>
+                            <p>Treatment-Free Interval: <strong>${treatmentFreeInterval} months</strong></p>
                             <p>Tumor Volume: <strong>${tumorVolume.toFixed(2)} mm³</strong></p>
                             <p>Complete Response: <strong>${eradicated ? 'Yes' : 'Ongoing Treatment'}</strong></p>
                         </div>

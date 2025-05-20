@@ -179,14 +179,21 @@ def generate_optimistic_metrics(clinical_data, input_params):
     metrics['disease_stage'] = disease_stage
     metrics['treatment_protocol'] = treatment_protocol
     
-    # 1. Calculate Treatment Response Rate - significantly affected by disease stage and protocol
+    # 1. Calculate Response Information
+    # First, check if we have actual tumor measurement data - only then can we calculate a real response rate
+    has_actual_measurements = (start_tumor_burden > 0 and end_tumor_burden > 0)
+    
     # Get eradication status - shouldn't show eradication for stage 4
     if eradicated and disease_stage >= 4:
         # Stage 4 shouldn't have eradication, that's unrealistic
         eradicated = False
         metrics['eradicated'] = False
     
-    if start_tumor_burden > 0 and end_tumor_burden > 0:
+    # Calculate response (if we have real data) or show expected response (if we don't)
+    if has_actual_measurements:
+        # We have real pre/post measurements - calculate ACTUAL response rate
+        metrics['response_data_source'] = "Actual Measurements"
+        
         # Base response rate from tumor reduction (real shrinkage amounts)
         base_response_rate = max(0, min(100, 100 * (1 - (end_tumor_burden / start_tumor_burden))))
         
@@ -231,38 +238,64 @@ def generate_optimistic_metrics(clinical_data, input_params):
             
         metrics['treatment_response_rate'] = round(response_rate, 1)
     else:
-        # Use realistic baseline values based on stage and protocol
+        # No real measurement data - show EXPECTED response rates instead
+        metrics['response_data_source'] = "Expected Outcomes"
+        
+        # Use realistic baseline values based on stage and protocol to show EXPECTED response
+        # These are labeled as expected since we don't have real measurements
         if disease_stage == 1:
-            base_rates = {
-                "ADAPTIVE": 85, 
-                "METRONOMIC": 80,
-                "CONTINUOUS": 78,
-                "PULSED": 75
+            expected_rates = {
+                "ADAPTIVE": "75-85%", 
+                "METRONOMIC": "70-80%",
+                "CONTINUOUS": "68-78%",
+                "PULSED": "65-75%"
             }
         elif disease_stage == 2:
-            base_rates = {
-                "ADAPTIVE": 75, 
-                "METRONOMIC": 70,
-                "CONTINUOUS": 68,
-                "PULSED": 65
+            expected_rates = {
+                "ADAPTIVE": "65-75%", 
+                "METRONOMIC": "60-70%",
+                "CONTINUOUS": "58-68%",
+                "PULSED": "55-65%"
             }
         elif disease_stage == 3:
-            base_rates = {
-                "ADAPTIVE": 65, 
-                "METRONOMIC": 60,
-                "CONTINUOUS": 58,
-                "PULSED": 55
+            expected_rates = {
+                "ADAPTIVE": "55-65%", 
+                "METRONOMIC": "50-60%",
+                "CONTINUOUS": "48-58%",
+                "PULSED": "45-55%"
             }
         elif disease_stage >= 4:
-            base_rates = {
-                "ADAPTIVE": 55, 
-                "METRONOMIC": 50,
-                "CONTINUOUS": 45,
-                "PULSED": 40
+            expected_rates = {
+                "ADAPTIVE": "45-55%", 
+                "METRONOMIC": "40-50%",
+                "CONTINUOUS": "35-45%",
+                "PULSED": "30-40%"
             }
         
-        # Get base rate for this protocol or use default
-        metrics['treatment_response_rate'] = base_rates.get(treatment_protocol, 50)
+        # Get expected rate range for this protocol or use default
+        expected_rate = expected_rates.get(treatment_protocol, "30-50%")
+        
+        # For protocol-specific expected outcomes, we don't use the calculated percent
+        metrics['expected_response_range'] = expected_rate
+        
+        # We need a numeric value for calculations, use the mid-point of the range
+        if "-" in expected_rate:
+            parts = expected_rate.replace("%", "").split("-")
+            if len(parts) == 2:
+                try:
+                    low = float(parts[0])
+                    high = float(parts[1])
+                    metrics['treatment_response_rate'] = (low + high) / 2
+                except ValueError:
+                    metrics['treatment_response_rate'] = 50
+            else:
+                metrics['treatment_response_rate'] = 50
+        else:
+            # If not a range, try to extract percentage
+            try:
+                metrics['treatment_response_rate'] = float(expected_rate.replace("%", ""))
+            except ValueError:
+                metrics['treatment_response_rate'] = 50
         
     # 2. Calculate Disease Control Rate - varies by protocol and stage
     # First, determine the actual clinical response based on tumor burden and stage
