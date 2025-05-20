@@ -167,15 +167,38 @@ def generate_optimistic_metrics(clinical_data, input_params):
     
     if isinstance(clinical_data, dict):
         # Check if we have an actual tumor measurement
-        if 'tumor_volume_mm3' in clinical_data and clinical_data['tumor_volume_mm3'] > 0:
-            tumor_volume = float(clinical_data.get('tumor_volume_mm3', 0))
-            has_tumor_measurement = True
+        if 'tumor_volume_mm3' in clinical_data:
+            try:
+                tumor_vol = float(clinical_data['tumor_volume_mm3'])
+                if tumor_vol > 0:
+                    tumor_volume = tumor_vol
+                    has_tumor_measurement = True
+            except (ValueError, TypeError):
+                # Could not convert to float, so no valid measurement
+                pass
             
-        eradicated = bool(clinical_data.get('eradicated', False))
+        # Handle all other data safely with better error handling
+        try:
+            eradicated = bool(clinical_data.get('eradicated', False))
+        except (ValueError, TypeError):
+            eradicated = False
+            
         clinical_response = str(clinical_data.get('clinical_response', ''))
-        start_tumor_burden = float(clinical_data.get('initial_tumor_burden', 0))
-        end_tumor_burden = float(clinical_data.get('final_tumor_burden', 0))
-        toxicity = float(clinical_data.get('treatment_toxicity', 1.0))
+        
+        try:
+            start_tumor_burden = float(clinical_data.get('initial_tumor_burden', 0))
+        except (ValueError, TypeError):
+            start_tumor_burden = 0
+            
+        try:
+            end_tumor_burden = float(clinical_data.get('final_tumor_burden', 0))
+        except (ValueError, TypeError):
+            end_tumor_burden = 0
+            
+        try:
+            toxicity = float(clinical_data.get('treatment_toxicity', 1.0))
+        except (ValueError, TypeError):
+            toxicity = 1.0
     
     # Store basic metrics
     metrics['has_tumor_measurement'] = has_tumor_measurement
