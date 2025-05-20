@@ -543,7 +543,6 @@ function displayResults(data, clinical) {
         const qualityOfLife = clinical.quality_of_life || "Good";
         const sideEffectProfile = clinical.side_effect_profile || "Manageable";
         const efficacyScore = clinical.treatment_efficacy_score || 0;
-        const tumorVolume = clinical.tumor_volume_mm3 || 0;
         const responseDataSource = clinical.response_data_source || "Expected Outcomes";
         const expectedResponseRange = clinical.expected_response_range || "";
         const treatmentFreeInterval = clinical.treatment_free_interval || 0;

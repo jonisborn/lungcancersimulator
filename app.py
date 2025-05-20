@@ -156,26 +156,14 @@ def generate_optimistic_metrics(clinical_data, input_params):
         # Keep default if conversion fails
         pass
     
-    # Extract tumor data
-    tumor_volume = None  # Use None to indicate we don't have a measurement
+    # Extract clinical data
     eradicated = False
     clinical_response = "Not Available"
     start_tumor_burden = 0
     end_tumor_burden = 0
     toxicity = 1.0
-    has_tumor_measurement = False
     
     if isinstance(clinical_data, dict):
-        # Check if we have an actual tumor measurement
-        if 'tumor_volume_mm3' in clinical_data:
-            try:
-                tumor_vol = float(clinical_data['tumor_volume_mm3'])
-                if tumor_vol > 0:
-                    tumor_volume = tumor_vol
-                    has_tumor_measurement = True
-            except (ValueError, TypeError):
-                # Could not convert to float, so no valid measurement
-                pass
             
         # Handle all other data safely with better error handling
         try:
