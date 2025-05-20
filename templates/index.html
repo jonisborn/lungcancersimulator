@@ -19,55 +19,101 @@
     
     <!-- Protocol Visualizer -->
     <script src="{{ url_for('static', filename='js/protocol-visualizer.js') }}"></script>
+    
+    <style>
+        .protocol-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .protocol-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .protocol-card.active {
+            border-width: 2px !important;
+        }
+        .impact-icon {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+        .pulse-animation {
+            animation: pulse-animation 1s;
+        }
+        .card-header {
+            font-weight: 600;
+        }
+        /* Ensure all cards are the same height within a row */
+        .card-equal-height {
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="container-fluid px-4 py-3">
         <header class="text-center mb-4">
-            <h1 class="display-4">Clinical Cancer Evolution Simulator</h1>
+            <h1 class="display-5">Clinical Cancer Evolution Simulator</h1>
             <p class="lead">Treatment outcome prediction tool for oncology practice</p>
-            <div class="badge bg-info text-white mb-3">For Research and Educational Purposes Only</div>
+            <div class="badge bg-info text-white mb-2">For Research and Educational Purposes Only</div>
         </header>
 
+        <!-- Main Content Area -->
         <div class="row">
-            <!-- Control Panel -->
-            <div class="col-lg-4">
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h4>Patient Data</h4>
-                    </div>
-                    <div class="card-body">
-                        <form id="simulation-form">
-                            <!-- Patient Demographics -->
-                            <h5 class="border-bottom pb-2 mb-3 text-primary">Patient Demographics</h5>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="patient-age" class="form-label fw-bold">Patient Age</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="patient-age-direct" min="18" max="90" value="55">
-                                        <span class="input-group-text">years</span>
-                                    </div>
+            <!-- Left Column - Input Parameters -->
+            <div class="col-lg-6">
+                <form id="simulation-form">
+                    <div class="row g-3 mb-4">
+                        <!-- PATIENT DATA CARD -->
+                        <div class="col-md-6">
+                            <div class="card bg-dark card-equal-height">
+                                <div class="card-header bg-primary bg-opacity-75">
+                                    <h5 class="mb-0 text-white">
+                                        <i class="bi bi-person-badge me-2"></i>
+                                        Patient Data
+                                    </h5>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="patient-weight" class="form-label fw-bold">Patient Weight</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control" id="patient-weight" min="30" max="200" value="70">
-                                        <span class="input-group-text">kg</span>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <label for="patient-age-direct" class="form-label">Age</label>
+                                            <input type="number" class="form-control" id="patient-age-direct" name="patient_age_direct" min="18" max="90" value="55">
+                                            <input type="hidden" id="patient-age" name="patient_age" value="55">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="patient-weight" class="form-label">Weight (kg)</label>
+                                            <input type="number" class="form-control" id="patient-weight" name="patient_weight" min="40" max="150" value="70">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label d-block">Gender</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="patient_gender" id="gender-male" value="male" checked>
+                                                <label class="form-check-label" for="gender-male">Male</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="patient_gender" id="gender-female" value="female">
+                                                <label class="form-check-label" for="gender-female">Female</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="performance-status" class="form-label">Performance Status</label>
+                                            <select class="form-select" id="performance-status" name="performance_status">
+                                                <option value="0">0 - Fully active</option>
+                                                <option value="1" selected>1 - Restricted</option>
+                                                <option value="2">2 - Ambulatory</option>
+                                                <option value="3">3 - Limited self-care</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="patient-metabolism" class="form-label">Metabolism: <span id="patient-metabolism-value">1.0</span></label>
+                                            <input type="range" class="form-range" id="patient-metabolism" name="patient_metabolism" min="0.5" max="1.5" step="0.1" value="1.0">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Gender</label>
-                                    <div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="gender" id="gender-male" value="male" checked>
-                                            <label class="form-check-label" for="gender-male">Male</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="gender" id="gender-female" value="female">
-                                            <label class="form-check-label" for="gender-female">Female</label>
-                                        </div>
+                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
