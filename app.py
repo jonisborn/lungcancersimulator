@@ -201,9 +201,9 @@ def generate_optimistic_metrics(clinical_data, input_params):
     # First, check if we have actual tumor measurement data - only then can we calculate a real response rate
     has_actual_measurements = (start_tumor_burden > 0 and end_tumor_burden > 0)
     
-    # Get eradication status - shouldn't show eradication for stage 4
-    if eradicated and disease_stage >= 4:
-        # Stage 4 shouldn't have eradication, that's unrealistic
+    # Get eradication status - shouldn't show eradication for advanced disease
+    if disease_stage >= 3:
+        # Stage 3-4 shouldn't have eradication, that's unrealistic
         eradicated = False
         metrics['eradicated'] = False
     
@@ -323,11 +323,11 @@ def generate_optimistic_metrics(clinical_data, input_params):
     response_rate = metrics['treatment_response_rate']
     clinical_benefit = ""
     
-    # For Stage 4, eradication is not medically realistic
-    if disease_stage >= 4 and eradicated:
+    # For Stage 3-4, eradication is not medically realistic
+    if disease_stage >= 3 and eradicated:
         eradicated = False
         metrics['eradicated'] = False
-        # Change clinical response to be more realistic for stage 4
+        # Change clinical response to be more realistic for advanced disease
         if response_rate >= 60:
             clinical_response = "Partial Response (PR)"
         elif response_rate >= 30:
