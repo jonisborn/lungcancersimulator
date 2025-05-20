@@ -560,12 +560,14 @@
                                 </div>
                             </div>
                             
-                            <!-- FLOATING ACTION BUTTON - ALWAYS VISIBLE -->
-                            <div class="fixed-bottom p-4 d-flex justify-content-center" style="z-index: 1050; pointer-events: none;">
-                                <div class="d-flex gap-2" style="pointer-events: auto;">
-                                    <button type="button" id="reset-params" class="btn btn-dark">
+                            <!-- FLOATING ACTION BUTTONS - ALWAYS VISIBLE -->
+                            <div class="fixed-bottom p-3 d-flex gap-3 justify-content-end" style="z-index: 1050; pointer-events: none;">
+                                <div style="pointer-events: auto;">
+                                    <button type="button" id="reset-params" class="btn btn-dark btn-lg rounded-circle shadow" title="Reset Parameters">
                                         <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
+                                </div>
+                                <div style="pointer-events: auto;">
                                     <button type="submit" id="run-simulation" class="btn btn-danger btn-lg px-4 shadow">
                                         <i class="bi bi-play-fill me-2"></i> RUN SIMULATION
                                     </button>
