@@ -157,15 +157,20 @@ def generate_optimistic_metrics(clinical_data, input_params):
         pass
     
     # Extract tumor data
-    tumor_volume = 0
+    tumor_volume = None  # Use None to indicate we don't have a measurement
     eradicated = False
     clinical_response = "Not Available"
     start_tumor_burden = 0
     end_tumor_burden = 0
     toxicity = 1.0
+    has_tumor_measurement = False
     
     if isinstance(clinical_data, dict):
-        tumor_volume = float(clinical_data.get('tumor_volume_mm3', 0))
+        # Check if we have an actual tumor measurement
+        if 'tumor_volume_mm3' in clinical_data and clinical_data['tumor_volume_mm3'] > 0:
+            tumor_volume = float(clinical_data.get('tumor_volume_mm3', 0))
+            has_tumor_measurement = True
+            
         eradicated = bool(clinical_data.get('eradicated', False))
         clinical_response = str(clinical_data.get('clinical_response', ''))
         start_tumor_burden = float(clinical_data.get('initial_tumor_burden', 0))
@@ -173,7 +178,10 @@ def generate_optimistic_metrics(clinical_data, input_params):
         toxicity = float(clinical_data.get('treatment_toxicity', 1.0))
     
     # Store basic metrics
-    metrics['tumor_volume_mm3'] = tumor_volume
+    metrics['has_tumor_measurement'] = has_tumor_measurement
+    if has_tumor_measurement:
+        metrics['tumor_volume_mm3'] = tumor_volume
+    
     metrics['eradicated'] = eradicated
     metrics['clinical_response'] = clinical_response
     metrics['disease_stage'] = disease_stage
@@ -243,44 +251,47 @@ def generate_optimistic_metrics(clinical_data, input_params):
         
         # Use realistic baseline values based on stage and protocol to show EXPECTED response
         # These are labeled as expected since we don't have real measurements
-        if disease_stage == 1:
-            expected_rates = {
+        
+        # Create default expected response ranges for each stage and protocol
+        default_expected_ranges = {
+            1: { 
                 "ADAPTIVE": "75-85%", 
                 "METRONOMIC": "70-80%",
                 "CONTINUOUS": "68-78%",
                 "PULSED": "65-75%"
-            }
-        elif disease_stage == 2:
-            expected_rates = {
+            },
+            2: { 
                 "ADAPTIVE": "65-75%", 
                 "METRONOMIC": "60-70%",
                 "CONTINUOUS": "58-68%",
                 "PULSED": "55-65%"
-            }
-        elif disease_stage == 3:
-            expected_rates = {
+            },
+            3: { 
                 "ADAPTIVE": "55-65%", 
                 "METRONOMIC": "50-60%",
                 "CONTINUOUS": "48-58%",
                 "PULSED": "45-55%"
-            }
-        elif disease_stage >= 4:
-            expected_rates = {
+            },
+            4: { 
                 "ADAPTIVE": "45-55%", 
                 "METRONOMIC": "40-50%",
                 "CONTINUOUS": "35-45%",
                 "PULSED": "30-40%"
             }
+        }
+        
+        # Get stage ranges or default to stage 3
+        stage_ranges = default_expected_ranges.get(disease_stage, default_expected_ranges[3])
         
         # Get expected rate range for this protocol or use default
-        expected_rate = expected_rates.get(treatment_protocol, "30-50%")
+        expected_range = stage_ranges.get(treatment_protocol, "30-50%")
         
         # For protocol-specific expected outcomes, we don't use the calculated percent
-        metrics['expected_response_range'] = expected_rate
+        metrics['expected_response_range'] = expected_range
         
         # We need a numeric value for calculations, use the mid-point of the range
-        if "-" in expected_rate:
-            parts = expected_rate.replace("%", "").split("-")
+        if "-" in expected_range:
+            parts = expected_range.replace("%", "").split("-")
             if len(parts) == 2:
                 try:
                     low = float(parts[0])
@@ -293,7 +304,7 @@ def generate_optimistic_metrics(clinical_data, input_params):
         else:
             # If not a range, try to extract percentage
             try:
-                metrics['treatment_response_rate'] = float(expected_rate.replace("%", ""))
+                metrics['treatment_response_rate'] = float(expected_range.replace("%", ""))
             except ValueError:
                 metrics['treatment_response_rate'] = 50
         

@@ -572,7 +572,7 @@ function displayResults(data, clinical) {
                             <p>Clinical Benefit: <strong>${clinicalBenefit}</strong></p>
                             <p>Disease Control Rate: <strong>${diseaseControlRate.toFixed(0)}%</strong></p>
                             <p>Treatment-Free Interval: <strong>${treatmentFreeInterval} months</strong></p>
-                            <p>Tumor Volume: <strong>${tumorVolume.toFixed(2)} mm³</strong></p>
+                            <p>Tumor Volume: <strong>Not provided</strong> <span class="badge bg-secondary">No measurement data</span></p>
                             <p>Complete Response: <strong>${eradicated ? 'Yes' : 'Ongoing Treatment'}</strong></p>
                         </div>
                     </div>
