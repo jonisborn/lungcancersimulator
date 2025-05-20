@@ -560,16 +560,20 @@
                                 </div>
                             </div>
                             
-                            <!-- FLOATING ACTION BUTTONS - ALWAYS VISIBLE -->
-                            <div class="fixed-bottom p-3 d-flex gap-3 justify-content-end" style="z-index: 1050; pointer-events: none;">
+                            <!-- BIG, BRIGHT SIMULATION BUTTON -->
+                            <div class="fixed-bottom p-4 d-flex justify-content-center" style="z-index: 9999; pointer-events: none;">
                                 <div style="pointer-events: auto;">
-                                    <button type="button" id="reset-params" class="btn btn-dark btn-lg rounded-circle shadow" title="Reset Parameters">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    <button type="submit" id="run-simulation" class="btn btn-danger btn-lg px-5 py-3 shadow-lg fs-5 fw-bold rounded-pill" style="background-color: #ff3e3e; border: none;">
+                                        <i class="bi bi-play-fill me-2"></i> RUN SIMULATION
                                     </button>
                                 </div>
+                            </div>
+                            
+                            <!-- Reset button in corner -->
+                            <div class="position-fixed bottom-0 end-0 p-4" style="z-index: 1000; pointer-events: none;">
                                 <div style="pointer-events: auto;">
-                                    <button type="submit" id="run-simulation" class="btn btn-danger btn-lg px-4 shadow">
-                                        <i class="bi bi-play-fill me-2"></i> RUN SIMULATION
+                                    <button type="button" id="reset-params" class="btn btn-dark rounded-circle shadow-sm" style="width: 50px; height: 50px;" title="Reset Parameters">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
                                 </div>
                             </div>
