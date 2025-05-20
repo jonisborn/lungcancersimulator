@@ -201,9 +201,8 @@ def generate_optimistic_metrics(clinical_data, input_params):
             toxicity = 1.0
     
     # Store basic metrics
-    metrics['has_tumor_measurement'] = has_tumor_measurement
-    if has_tumor_measurement:
-        metrics['tumor_volume_mm3'] = tumor_volume
+    metrics['has_tumor_measurement'] = False  # Always set to false as we don't want to show tumor measurements
+    # Do not include tumor_volume_mm3 in metrics to avoid displaying it
     
     metrics['eradicated'] = eradicated
     metrics['clinical_response'] = clinical_response
