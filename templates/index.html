@@ -387,39 +387,39 @@
                                 <!-- DRUG REGIMEN SELECTOR -->
                                 <div class="row mb-4">
                                     <div class="col-lg-6">
-                                        <label class="form-label fw-bold">Select Drug Combination:</label>
+                                        <label class="form-label fw-bold">Select Lung Cancer Treatment:</label>
                                         <div class="d-flex flex-wrap gap-2">
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfox" value="folfox" checked>
-                                                <label class="form-check-label" for="folfox">FOLFOX</label>
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfox" value="carboplatin" checked>
+                                                <label class="form-check-label" for="folfox">Carbo/Pem</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfiri" value="folfiri">
-                                                <label class="form-check-label" for="folfiri">FOLFIRI</label>
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="folfiri" value="taxol">
+                                                <label class="form-check-label" for="folfiri">Carbo/Taxol</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="capox" value="capox">
-                                                <label class="form-check-label" for="capox">CAPOX</label>
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="capox" value="immunotherapy">
+                                                <label class="form-check-label" for="capox">IO+Chemo</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="custom" value="custom">
-                                                <label class="form-check-label" for="custom">CUSTOM</label>
+                                                <input class="form-check-input regimen-radio protocol-selector" type="radio" name="regimen" id="custom" value="targeted">
+                                                <label class="form-check-label" for="custom">Targeted</label>
                                             </div>
                                         </div>
-                                        <input type="hidden" id="treatment-regimen" value="folfox">
+                                        <input type="hidden" id="treatment-regimen" value="carboplatin">
                                         
                                         <div class="regimen-info mt-2">
                                             <div id="folfox-info" class="alert alert-info py-2 small">
-                                                <strong>FOLFOX:</strong> 5-FU, leucovorin, oxaliplatin. Excellent for sensitive cells, less effective against resistant cells.
+                                                <strong>Carboplatin/Pemetrexed:</strong> First-line platinum-based chemotherapy for NSCLC. Effective against sensitive cells but with potential for resistant clones.
                                             </div>
                                             <div id="folfiri-info" class="alert alert-info py-2 small d-none">
-                                                <strong>FOLFIRI:</strong> 5-FU, leucovorin, irinotecan. Better at targeting resistant cells with higher toxicity.
+                                                <strong>Carboplatin/Paclitaxel:</strong> Platinum doublet with taxane for NSCLC. Higher toxicity but potentially more effective against resistant subpopulations.
                                             </div>
                                             <div id="capox-info" class="alert alert-info py-2 small d-none">
-                                                <strong>CAPOX:</strong> Capecitabine and oxaliplatin. Oral therapy with extended effect and better tolerability.
+                                                <strong>Immunotherapy + Chemo:</strong> Pembrolizumab or Nivolumab combined with chemotherapy. Enhanced immune response with potential for durable control.
                                             </div>
                                             <div id="custom-info" class="alert alert-info py-2 small d-none">
-                                                <strong>CUSTOM:</strong> Experimental immunotherapy with balanced effects and immune enhancement.
+                                                <strong>Targeted Therapy:</strong> EGFR/ALK/ROS1 inhibitors for mutation-positive NSCLC. High efficacy in biomarker-positive disease with lower toxicity.
                                             </div>
                                         </div>
                                     </div>

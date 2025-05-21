@@ -83,19 +83,24 @@ function setupClinicalFormListeners() {
             const regimen = this.value;
             
             switch(regimen) {
-                case 'folfox':
-                    // FOLFOX protocol: 5-FU, leucovorin, oxaliplatin
-                    setTreatmentParameters(0.85, 0.12, 14, 'PULSED');
+                case 'carboplatin':
+                    // Carboplatin/Pemetrexed: Standard lung cancer treatment
+                    setTreatmentParameters(0.80, 0.15, 21, 'PULSED');
                     break;
                     
-                case 'folfiri':
-                    // FOLFIRI protocol: 5-FU, leucovorin, irinotecan
-                    setTreatmentParameters(0.8, 0.15, 14, 'PULSED');
+                case 'taxol':
+                    // Carboplatin/Paclitaxel: More aggressive with higher toxicity
+                    setTreatmentParameters(0.88, 0.18, 21, 'PULSED');
                     break;
                     
-                case 'capox':
-                    // CAPOX protocol: capecitabine, oxaliplatin
-                    setTreatmentParameters(0.75, 0.08, 21, 'CONTINUOUS');
+                case 'immunotherapy':
+                    // Immunotherapy + Chemo: Slower onset but longer duration
+                    setTreatmentParameters(0.75, 0.05, 21, 'CONTINUOUS');
+                    break;
+                    
+                case 'targeted':
+                    // Targeted therapy: Higher potency in mutation+ patients
+                    setTreatmentParameters(0.95, 0.10, 28, 'CONTINUOUS');
                     break;
             }
             

@@ -379,12 +379,12 @@ class CancerSimulation:
         # Calculate total tumor burden
         total_tumor = pop_vector[0] + pop_vector[1] + pop_vector[2]
         
-        # Baseline survival based on tumor size
+        # Baseline survival based on tumor size - adjusted for lung cancer's poorer prognosis
         if total_tumor < 1:  # Complete response
-            base_survival = 0.98  # Near complete survival for total elimination
+            base_survival = 0.85  # Even with complete response, lung cancer has risk of recurrence
         else:
-            # Sharper logistic decay for more dramatic effect
-            base_survival = 0.95 / (1 + math.exp(0.002 * (total_tumor - 3000)))
+            # Sharper logistic decay - lung cancer has worse outcomes at all tumor sizes
+            base_survival = 0.75 / (1 + math.exp(0.0025 * (total_tumor - 2500)))
         
         # Adjust based on composition (stem cells are worse prognosis)
         stem_fraction = pop_vector[2] / total_tumor if total_tumor > 0 else 0
