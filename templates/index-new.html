@@ -177,11 +177,25 @@
                                     
                                     <div class="mb-3" id="pack-years-container">
                                         <label for="pack-years" class="form-label d-flex justify-content-between">
-                                            <span>Pack-Years</span>
+                                            <span>Smoking History (Pack-Years)</span>
                                             <span id="pack-years-value" class="slider-value">30</span>
                                         </label>
-                                        <input type="range" class="form-range" id="pack-years" min="0" max="100" value="30" step="1">
-                                        <small class="text-muted">Number of packs per day × years smoked</small>
+                                        <input type="range" class="form-range" id="pack-years" min="0" max="100" value="30" step="5">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Light</small>
+                                            <small class="text-muted">Moderate</small>
+                                            <small class="text-muted">Heavy</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Pack-years = packs per day × years smoked (e.g., 1 pack/day for 30 years = 30 pack-years)
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-success">0-10</span> Light
+                                            <span class="badge bg-warning ms-2">11-40</span> Moderate
+                                            <span class="badge bg-danger ms-2">41+</span> Heavy Smoking History
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
