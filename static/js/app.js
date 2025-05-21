@@ -57,6 +57,15 @@ function setupEventListeners() {
     
     // Set up biomarker events
     setupBiomarkerEvents();
+    
+    // Add biomarker button event listener
+    const biomarkerBtn = document.getElementById('biomarker-btn');
+    if (biomarkerBtn) {
+        biomarkerBtn.addEventListener('click', function() {
+            const biomarkerModal = new bootstrap.Modal(document.getElementById('biomarkerModal'));
+            biomarkerModal.show();
+        });
+    }
 }
 
 /**

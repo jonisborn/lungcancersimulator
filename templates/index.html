@@ -185,10 +185,15 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Lung Cancer Type</label>
-                                    <select class="form-select" id="tumor-type">
-                                        <option value="lung" selected>Non-Small Cell (NSCLC)</option>
-                                        <option value="lung-small">Small Cell (SCLC)</option>
-                                    </select>
+                                    <div class="d-flex">
+                                        <select class="form-select me-2" id="tumor-type">
+                                            <option value="lung" selected>Non-Small Cell (NSCLC)</option>
+                                            <option value="lung-small">Small Cell (SCLC)</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-info" id="biomarker-btn" data-bs-toggle="tooltip" title="Set molecular biomarkers (EGFR, ALK, PD-L1, etc.)">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </button>
+                                    </div>
                                     <input type="hidden" id="hidden-tumor-type" value="lung">
                                 </div>
                                 <div class="col-md-6">
