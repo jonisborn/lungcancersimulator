@@ -304,6 +304,25 @@
                                     <!-- Treatment Parameters -->
                                     <h5 class="border-bottom pb-2 mb-3 mt-4">Treatment Strategy</h5>
                                     
+                                    <!-- Treatment Cards -->
+                                    <div class="mb-3">
+                                        <div class="row row-cols-1 g-2">
+                                            <div class="col">
+                                                <div class="alert alert-info py-2">
+                                                    <div class="d-flex">
+                                                        <div class="me-2">
+                                                            <i class="bi bi-info-circle-fill fs-4"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Treatment Selection Guide</h6>
+                                                            <p class="mb-0 small">Treatment selection is based on cancer type, stage, biomarkers, and patient factors. Each modality has distinct resistance patterns and evolutionary pressures.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="mb-3">
                                         <label for="treatment-type" class="form-label">Treatment Type</label>
                                         <select class="form-select" id="treatment-type">
@@ -313,6 +332,96 @@
                                             <option value="chemoimmuno">Chemo-Immunotherapy</option>
                                             <option value="radiation">Radiation Therapy</option>
                                         </select>
+                                        
+                                        <!-- Treatment Type Info Cards -->
+                                        <div class="mt-2">
+                                            <div class="row row-cols-1 g-2">
+                                                <!-- Chemotherapy Card -->
+                                                <div class="col treatment-info" id="chemotherapy-info">
+                                                    <div class="card border-secondary">
+                                                        <div class="card-header py-1 bg-secondary text-white">
+                                                            <h6 class="card-title mb-0">Chemotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Cytotoxic agents targeting rapidly dividing cells.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Standard of care for most advanced NSCLC without driver mutations</li>
+                                                                <li>Primary therapy for SCLC with high initial response rates</li>
+                                                                <li>Promotes resistant clone selection under treatment pressure</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Targeted Therapy Card -->
+                                                <div class="col treatment-info d-none" id="targeted-info">
+                                                    <div class="card border-info">
+                                                        <div class="card-header py-1 bg-info text-white">
+                                                            <h6 class="card-title mb-0">Targeted Therapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Precision medicines targeting specific molecular alterations.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>First-line for NSCLC with EGFR, ALK, ROS1, BRAF, RET mutations</li>
+                                                                <li>High initial response rates (60-80%)</li>
+                                                                <li>Inevitable resistance through mutation or bypass pathways</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Immunotherapy Card -->
+                                                <div class="col treatment-info d-none" id="immunotherapy-info">
+                                                    <div class="card border-success">
+                                                        <div class="card-header py-1 bg-success text-white">
+                                                            <h6 class="card-title mb-0">Immunotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Immune checkpoint inhibitors enhancing T-cell activity.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>First-line for NSCLC with high PD-L1 expression (≥50%)</li>
+                                                                <li>Durable responses in 20-40% of patients</li>
+                                                                <li>Resistance through immunoediting and T-cell exhaustion</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Chemoimmunotherapy Card -->
+                                                <div class="col treatment-info d-none" id="chemoimmuno-info">
+                                                    <div class="card border-primary">
+                                                        <div class="card-header py-1 bg-primary text-white">
+                                                            <h6 class="card-title mb-0">Chemo-Immunotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Combination therapy leveraging synergistic effects.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Standard for NSCLC without driver mutations or PD-L1 < 50%</li>
+                                                                <li>Chemotherapy enhances immunotherapy through tumor antigen release</li>
+                                                                <li>Complex resistance patterns involving both immune escape and drug resistance</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Radiation Card -->
+                                                <div class="col treatment-info d-none" id="radiation-info">
+                                                    <div class="card border-warning">
+                                                        <div class="card-header py-1 bg-warning text-dark">
+                                                            <h6 class="card-title mb-0">Radiation Therapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Localized treatment using ionizing radiation.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Curative for early-stage NSCLC (SBRT) when surgery contraindicated</li>
+                                                                <li>Combined with chemotherapy for stage III NSCLC</li>
+                                                                <li>May induce abscopal effects through immune stimulation</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3" id="treatment-options-container">
@@ -347,6 +456,11 @@
                                             <option value="imrt" data-type="radiation">IMRT (Intensity Modulated RT)</option>
                                             <option value="chemoradiation" data-type="radiation">Concurrent Chemoradiation</option>
                                         </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Specific regimens available depend on the selected treatment type
+                                            </small>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -357,6 +471,57 @@
                                             <option value="METRONOMIC">Metronomic (Low-dose)</option>
                                             <option value="ADAPTIVE">Adaptive (Response-based)</option>
                                         </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> The dosing strategy can significantly impact tumor evolution and resistance
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Treatment Protocol Cards -->
+                                        <div class="mt-2">
+                                            <div class="row row-cols-2 g-2">
+                                                <div class="col">
+                                                    <div class="card h-100 border-primary">
+                                                        <div class="card-header py-1 px-3 bg-primary text-white">
+                                                            <h6 class="card-title mb-0">Continuous</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Daily uninterrupted dosing. Good for targeted therapies, maintains constant drug pressure but may accelerate resistance.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-success">
+                                                        <div class="card-header py-1 px-3 bg-success text-white">
+                                                            <h6 class="card-title mb-0">Pulsed</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Standard intermittent dosing with rest periods. Allows recovery from side effects, balances efficacy and toxicity.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-info">
+                                                        <div class="card-header py-1 px-3 bg-info text-white">
+                                                            <h6 class="card-title mb-0">Metronomic</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Frequent low doses without extended breaks. Targets tumor vasculature, reduces resistance, minimal side effects.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-warning">
+                                                        <div class="card-header py-1 px-3 bg-warning text-dark">
+                                                            <h6 class="card-title mb-0">Adaptive</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Response-guided dosing. Titrates treatment based on tumor burden, exploits competition between sensitive/resistant cells.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
