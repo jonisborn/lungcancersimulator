@@ -163,14 +163,12 @@
                             
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Tumor Type</label>
+                                    <label class="form-label fw-bold">Lung Cancer Type</label>
                                     <select class="form-select" id="tumor-type">
-                                        <option value="breast">Breast Cancer</option>
-                                        <option value="colorectal" selected>Colorectal Cancer</option>
-                                        <option value="lung">Lung Cancer</option>
-                                        <option value="prostate">Prostate Cancer</option>
-                                        <option value="melanoma">Melanoma</option>
+                                        <option value="lung" selected>Non-Small Cell (NSCLC)</option>
+                                        <option value="lung-small">Small Cell (SCLC)</option>
                                     </select>
+                                    <input type="hidden" id="hidden-tumor-type" value="lung">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Disease Stage</label>

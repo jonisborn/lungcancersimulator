@@ -193,17 +193,11 @@ class CancerSimulation:
             disease_stage_factor = 1.4  # Metastatic - less responsive
             
         # Tumor type affects drug response
-        tumor_type_factor = 1.0
-        if patient_data.get('tumor_type') == 'colorectal':
-            tumor_type_factor = 1.0  # Baseline
-        elif patient_data.get('tumor_type') == 'breast':
-            tumor_type_factor = 0.8  # More responsive to therapy
-        elif patient_data.get('tumor_type') == 'lung':
-            tumor_type_factor = 1.3  # Less responsive
-        elif patient_data.get('tumor_type') == 'prostate':
-            tumor_type_factor = 0.9  # Moderately responsive
-        elif patient_data.get('tumor_type') == 'melanoma':
-            tumor_type_factor = 1.2  # Less responsive
+        tumor_type_factor = 1.3  # Lung cancer base factor - less responsive to therapy
+        if patient_data.get('tumor_type') == 'lung':
+            tumor_type_factor = 1.3  # NSCLC - less responsive to therapy
+        elif patient_data.get('tumor_type') == 'lung-small':
+            tumor_type_factor = 1.5  # SCLC - even less responsive, more aggressive
             
         # Comorbidities affect drug efficacy
         comorbidity_factor = 1.0
