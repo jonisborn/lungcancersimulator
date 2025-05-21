@@ -1661,6 +1661,17 @@
             if (matchingOptions.length > 0) {
                 matchingOptions[0].selected = true;
             }
+            
+            // Show/hide treatment info cards based on selection
+            document.querySelectorAll('.treatment-info').forEach(card => {
+                card.classList.add('d-none');
+            });
+            
+            // Show the selected treatment info card
+            const selectedInfoCard = document.getElementById(`${treatmentType}-info`);
+            if (selectedInfoCard) {
+                selectedInfoCard.classList.remove('d-none');
+            }
         }
         
         /**
