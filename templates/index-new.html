@@ -1158,7 +1158,9 @@
             const timeUnitButtons = document.querySelectorAll('.time-unit-toggle input');
             timeUnitButtons.forEach(button => {
                 button.addEventListener('change', function() {
-                    updateTimeLabels(this.id.replace('time-', ''));
+                    const unit = this.id.replace('time-', '');
+                    console.log("Time unit changed to:", unit);
+                    updateTimeLabels(unit);
                 });
             });
             
@@ -1173,7 +1175,11 @@
          * Update time axis labels based on selected time unit
          */
         function updateTimeLabels(unit) {
-            if (!populationChart || !drugLevelChart) return;
+            console.log("Updating time labels to:", unit);
+            if (!populationChart || !drugLevelChart) {
+                console.warn("Charts not initialized yet");
+                return;
+            }
             
             let xAxisText = 'Time (days)';
             let xAxisLabels = Array.from({length: 100}, (_, i) => i);
@@ -1192,15 +1198,21 @@
             // Update population chart
             populationChart.options.scales.x.title.text = xAxisText;
             populationChart.data.labels = xAxisLabels;
-            populationChart.update();
+            
+            // Force a chart redraw by updating
+            populationChart.update('none'); // Disable animation for instant update
             
             // Update drug level chart
             drugLevelChart.options.scales.x.title.text = xAxisText;
             drugLevelChart.data.labels = xAxisLabels;
-            drugLevelChart.update();
+            
+            // Force a chart redraw
+            drugLevelChart.update('none'); // Disable animation for instant update
             
             // Update any time-based values in clinical metrics displays
             updateClinicalTimeScales(unit);
+            
+            console.log("Time labels updated successfully");
         }
         
         /**
