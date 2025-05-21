@@ -48,6 +48,15 @@ function setupEventListeners() {
     
     // Setup sliders to update their value displays
     setupSliderListeners();
+    
+    // Set up scenario card selection
+    setupScenarioCards();
+    
+    // Set up time unit selection
+    setupTimeUnits();
+    
+    // Set up biomarker events
+    setupBiomarkerEvents();
 }
 
 /**
@@ -385,6 +394,7 @@ function collectParameters() {
     const resistantCells = parseInt(document.getElementById('resistant-cells').value);
     const stemCells = parseInt(document.getElementById('stem-cells').value);
     const immuneCells = parseInt(document.getElementById('immune-cells').value);
+    const myeloidCells = parseInt(document.getElementById('myeloid-cells').value || 30);
     
     // Get treatment regimen and protocol
     const treatmentRegimen = document.getElementById('treatment-regimen') ? 
