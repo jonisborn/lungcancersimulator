@@ -20,6 +20,11 @@ def index():
 def simple():
     """Render the simplified simulation page for testing"""
     return render_template('simple.html')
+    
+@app.route('/basic')
+def basic():
+    """Render the basic lung cancer simulator"""
+    return render_template('basic.html')
 
 @app.route('/get_protocols', methods=['GET'])
 def get_protocols():
