@@ -548,7 +548,7 @@ function runSimulation() {
  * @param {Object} data - Simulation results data
  * @param {Object} clinical - Clinical summary data
  */
-function displayResults(data, clinical) {
+
     try {
         // Calculate final values
         const finalDay = data.time_points.length - 1;
