@@ -441,14 +441,41 @@
                         </div>
                     </div>
                     
-                    <!-- EGFR+ NSCLC Scenario -->
+                    <!-- EGFR+ Early NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="egfr-early-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">EGFR+ Early NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage EGFR-mutated NSCLC suitable for surgical resection.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">EGFR+</span>
+                                    <span class="badge bg-secondary biomarker-badge">TP53+</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: II (T2bN0M0)</li>
+                                    <li class="list-group-item bg-transparent">Surgery with adjuvant targeted therapy</li>
+                                    <li class="list-group-item bg-transparent">Lower recurrence risk with targeted therapy</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- EGFR+ Advanced NSCLC Scenario -->
                     <div class="col">
                         <div class="card scenario-card h-100" data-scenario="egfr-nsclc">
                             <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">EGFR+ NSCLC</h5>
+                                <h5 class="mb-0">EGFR+ Advanced NSCLC</h5>
                             </div>
                             <div class="card-body">
-                                <p class="card-text">EGFR-mutated non-small cell lung cancer with targetable driver mutation.</p>
+                                <p class="card-text">Advanced EGFR-mutated NSCLC with targetable driver mutation.</p>
                                 <div class="mt-3">
                                     <span class="badge bg-info biomarker-badge">EGFR+</span>
                                     <span class="badge bg-secondary biomarker-badge">TP53+</span>
@@ -468,14 +495,41 @@
                         </div>
                     </div>
                     
-                    <!-- ALK+ NSCLC Scenario -->
+                    <!-- ALK+ NSCLC Early Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="alk-early-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">ALK+ Early NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage ALK-rearranged non-small cell lung cancer, surgical candidate.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">ALK+</span>
+                                    <span class="badge bg-secondary biomarker-badge">KRAS-</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: II (T2N0M0)</li>
+                                    <li class="list-group-item bg-transparent">Surgical resection followed by targeted therapy</li>
+                                    <li class="list-group-item bg-transparent">Excellent disease control</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ALK+ NSCLC Advanced Scenario -->
                     <div class="col">
                         <div class="card scenario-card h-100" data-scenario="alk-nsclc">
                             <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">ALK+ NSCLC</h5>
+                                <h5 class="mb-0">ALK+ Advanced NSCLC</h5>
                             </div>
                             <div class="card-body">
-                                <p class="card-text">ALK-rearranged non-small cell lung cancer, responsive to targeted therapies.</p>
+                                <p class="card-text">Advanced ALK-rearranged non-small cell lung cancer, responsive to targeted therapies.</p>
                                 <div class="mt-3">
                                     <span class="badge bg-info biomarker-badge">ALK+</span>
                                     <span class="badge bg-secondary biomarker-badge">KRAS-</span>
@@ -950,6 +1004,42 @@
                     drugStrength: 0.9,
                     drugDecay: 0.15,
                     doseFrequency: 21
+                },
+                'alk-early-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 45,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '0',
+                    sensitiveCells: 75,
+                    resistantCells: 3,
+                    stemCells: 2,
+                    immuneCells: 100,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'alectinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.9,
+                    drugDecay: 0.1,
+                    doseFrequency: 1
+                },
+                'egfr-early-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 60,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '0',
+                    sensitiveCells: 65,
+                    resistantCells: 4,
+                    stemCells: 2,
+                    immuneCells: 90,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'osimertinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.85,
+                    drugDecay: 0.15,
+                    doseFrequency: 1
                 },
                 'egfr-nsclc': {
                     cancerType: 'NSCLC',
