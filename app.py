@@ -15,6 +15,11 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 def index():
     """Render the main simulation page"""
     return render_template('index.html')
+    
+@app.route('/simple')
+def simple():
+    """Render the simplified simulation page for testing"""
+    return render_template('simple.html')
 
 @app.route('/get_protocols', methods=['GET'])
 def get_protocols():
