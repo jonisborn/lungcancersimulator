@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update parameter display values
     updateAllDisplayValues();
+    
+    // Initialize tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 });
 
 /**
@@ -234,6 +238,7 @@ function setupSliderListeners() {
     
     // Lung cancer specific parameters
     setupSlider('pack-years', 'pack-years-value', 0);
+    setupSlider('myeloid-cells', 'myeloid-value', 0);
     
     // Evolutionary parameter sliders
     setupSlider('mutation-rate', 'mutation-rate-value', 3);
