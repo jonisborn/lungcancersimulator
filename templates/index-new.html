@@ -1825,10 +1825,10 @@
                 drugLevelChart.update();
             }
             
-            // Apply current time unit
-            const selectedTimeUnit = document.querySelector('.time-unit-toggle input:checked');
-            if (selectedTimeUnit) {
-                updateTimeLabels(selectedTimeUnit.id.replace('time-', ''));
+            // Apply current time unit if not already days
+            const currentUnit = document.querySelector('input[name="time-unit"]:checked');
+            if (currentUnit && currentUnit.id !== 'time-days') {
+                updateTimeLabels(currentUnit.id.replace('time-', ''));
             }
             
             // Apply log scale if enabled
