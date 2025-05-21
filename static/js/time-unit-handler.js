@@ -10,26 +10,40 @@ document.addEventListener('DOMContentLoaded', function() {
  * Set up the time unit toggle buttons to update charts
  */
 function setupTimeUnitToggle() {
-    const days = document.getElementById('time-days');
-    const weeks = document.getElementById('time-weeks');
-    const months = document.getElementById('time-months');
+    // Use direct selector for the labels instead of the inputs
+    const daysLabel = document.querySelector('label[for="time-days"]');
+    const weeksLabel = document.querySelector('label[for="time-weeks"]');
+    const monthsLabel = document.querySelector('label[for="time-months"]');
     
-    if (days && weeks && months) {
-        days.addEventListener('click', function() {
-            console.log('Days clicked');
-            convertTimeUnits('days');
-        });
-        
-        weeks.addEventListener('click', function() {
-            console.log('Weeks clicked');
-            convertTimeUnits('weeks');
-        });
-        
-        months.addEventListener('click', function() {
-            console.log('Months clicked');
-            convertTimeUnits('months');
+    if (daysLabel) {
+        daysLabel.addEventListener('click', function() {
+            console.log('Days clicked via label');
+            setTimeout(() => convertTimeUnits('days'), 50);
         });
     }
+    
+    if (weeksLabel) {
+        weeksLabel.addEventListener('click', function() {
+            console.log('Weeks clicked via label');
+            setTimeout(() => convertTimeUnits('weeks'), 50);
+        });
+    }
+    
+    if (monthsLabel) {
+        monthsLabel.addEventListener('click', function() {
+            console.log('Months clicked via label');
+            setTimeout(() => convertTimeUnits('months'), 50);
+        });
+    }
+    
+    // Also add listeners to radio inputs for change events
+    document.querySelectorAll('input[name="time-unit"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const unit = this.id.replace('time-', '');
+            console.log(`${unit} selected via change event`);
+            convertTimeUnits(unit);
+        });
+    });
 }
 
 /**
@@ -42,6 +56,12 @@ function convertTimeUnits(unit) {
     }
     
     console.log('Converting to', unit);
+    
+    // Update the active button styling
+    document.querySelectorAll('.time-unit-toggle .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`btn-${unit}`).classList.add('active');
     
     // Get basic time points (0-100)
     const timePoints = Array.from({length: 100}, (_, i) => i);
@@ -67,6 +87,9 @@ function convertTimeUnits(unit) {
     window.drugLevelChart.data.labels = newLabels;
     window.drugLevelChart.options.scales.x.title.text = xAxisLabel;
     window.drugLevelChart.update();
+    
+    // Store the current unit for future reference
+    window.currentTimeUnit = unit;
     
     console.log('Time unit conversion complete');
 }

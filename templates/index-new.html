@@ -121,14 +121,9 @@
                                     <!-- Time Unit Toggle -->
                                     <div class="d-flex justify-content-end mb-3">
                                         <div class="btn-group time-unit-toggle" role="group">
-                                            <input type="radio" class="btn-check" name="time-unit" id="time-days" autocomplete="off" checked>
-                                            <label class="btn btn-sm btn-outline-secondary" for="time-days">Days</label>
-                                            
-                                            <input type="radio" class="btn-check" name="time-unit" id="time-weeks" autocomplete="off">
-                                            <label class="btn btn-sm btn-outline-secondary" for="time-weeks">Weeks</label>
-                                            
-                                            <input type="radio" class="btn-check" name="time-unit" id="time-months" autocomplete="off">
-                                            <label class="btn btn-sm btn-outline-secondary" for="time-months">Months</label>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary active" id="btn-days" onclick="convertTimeUnits('days')">Days</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-weeks" onclick="convertTimeUnits('weeks')">Weeks</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-months" onclick="convertTimeUnits('months')">Months</button>
                                         </div>
                                     </div>
                                     
