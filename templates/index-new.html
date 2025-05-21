@@ -1186,6 +1186,9 @@
                 xAxisLabels = Array.from({length: 100}, (_, i) => (i / 30).toFixed(1));
             }
             
+            // Store the current unit for future reference
+            window.currentTimeUnit = unit;
+            
             // Update population chart
             populationChart.options.scales.x.title.text = xAxisText;
             populationChart.data.labels = xAxisLabels;
@@ -1195,6 +1198,33 @@
             drugLevelChart.options.scales.x.title.text = xAxisText;
             drugLevelChart.data.labels = xAxisLabels;
             drugLevelChart.update();
+            
+            // Update any time-based values in clinical metrics displays
+            updateClinicalTimeScales(unit);
+        }
+        
+        /**
+         * Update any clinical metrics that display time-based values
+         */
+        function updateClinicalTimeScales(unit) {
+            // Update any displayed time values in the clinical metrics
+            const timeValueElements = document.querySelectorAll('.time-value');
+            
+            timeValueElements.forEach(el => {
+                const daysValue = parseInt(el.getAttribute('data-days') || '0');
+                let displayValue = daysValue;
+                let unitLabel = ' days';
+                
+                if (unit === 'weeks') {
+                    displayValue = (daysValue / 7).toFixed(1);
+                    unitLabel = ' weeks';
+                } else if (unit === 'months') {
+                    displayValue = (daysValue / 30).toFixed(1);
+                    unitLabel = ' months';
+                }
+                
+                el.textContent = displayValue + unitLabel;
+            });
         }
         
         /**
