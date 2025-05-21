@@ -613,9 +613,17 @@
                                         <div class="chart-container">
                                             <canvas id="population-chart"></canvas>
                                         </div>
-                                        <div class="form-check form-switch mt-2">
-                                            <input class="form-check-input" type="checkbox" id="log-scale-toggle">
-                                            <label class="form-check-label" for="log-scale-toggle">Logarithmic Scale</label>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="log-scale-toggle">
+                                                <label class="form-check-label" for="log-scale-toggle">Logarithmic Scale</label>
+                                            </div>
+                                            
+                                            <div class="btn-group btn-group-sm time-scale-btns">
+                                                <button type="button" class="btn btn-sm btn-primary active" id="chart-days-btn">Days</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="chart-weeks-btn">Weeks</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="chart-months-btn">Months</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1061,8 +1069,7 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/time-unit-handler.js"></script>
-    <script src="/static/js/time-toggle-fix.js"></script>
+    <script src="/static/js/direct-time-scale.js"></script>
     
     <script>
         // Global chart objects
