@@ -557,41 +557,46 @@ function runSimulation() {
  * @param {Object} data - Simulation results data
  * @param {Object} clinical - Clinical summary data
  */
+function displayResults(data, clinical) {
+    // Update charts with simulation data
+    updateCharts(data);
+    
+    // Display clinical outcomes
+    if (clinical) {
+        updateClinicalOutcomes(clinical);
+    }
+}
 
-    try {
-        // Calculate final values
-        const finalDay = data.time_points.length - 1;
-        const finalTotal = data.total[finalDay];
-        const finalSensitive = data.sensitive[finalDay];
-        const finalResistant = data.resistant[finalDay];
-        const finalStemcell = data.stemcell[finalDay];
-        
-        // Get clinical outcomes with new more optimistic metrics
-        const eradicated = clinical.eradicated || false;
-        const clinicalResponse = clinical.clinical_response || "Not Available";
-        const clinicalBenefit = clinical.clinical_benefit || "Treatment Effect";
-        const responseRate = clinical.treatment_response_rate || 0;
-        const diseaseControlRate = clinical.disease_control_rate || 0;
-        const qualityOfLife = clinical.quality_of_life || "Good";
-        const sideEffectProfile = clinical.side_effect_profile || "Manageable";
-        const efficacyScore = clinical.treatment_efficacy_score || 0;
-        const responseDataSource = clinical.response_data_source || "Expected Outcomes";
-        const expectedResponseRange = clinical.expected_response_range || "";
-        const treatmentFreeInterval = clinical.treatment_free_interval || 0;
-        
-        // Get results container
-        const resultsContainer = document.getElementById('results-container');
-        
-        // Create response display based on whether we have real measurements or just expectations
-        let responseDisplay = "";
-        if (responseDataSource === "Actual Measurements") {
-            responseDisplay = `<p>Tumor Response: <strong>${responseRate.toFixed(1)}%</strong> <span class="badge bg-info">Measured</span></p>`;
-        } else {
-            responseDisplay = `<p>Expected Response: <strong>${expectedResponseRange}</strong> <span class="badge bg-secondary">Protocol-based</span></p>`;
-        }
-        
-        // Updated results HTML with optimistic clinical metrics
-        resultsContainer.innerHTML = `
+/**
+ * Update clinical outcome metrics in the results display
+ * @param {Object} clinical - Clinical outcome data
+ */
+function updateClinicalOutcomes(clinical) {
+    // Get clinical values
+    const clinicalResponse = clinical.clinical_response || "Not Available";
+    const clinicalBenefit = clinical.clinical_benefit || "Treatment Effect";
+    const responseRate = clinical.treatment_response_rate || 0;
+    const diseaseControlRate = clinical.disease_control_rate || 0;
+    const qualityOfLife = clinical.quality_of_life || "Good";
+    const sideEffectProfile = clinical.side_effect_profile || "Manageable";
+    const efficacyScore = clinical.treatment_efficacy_score || 0;
+    const responseDataSource = clinical.response_data_source || "Expected Outcomes";
+    const expectedResponseRange = clinical.expected_response_range || "";
+    const treatmentFreeInterval = clinical.treatment_free_interval || 0;
+    
+    // Get results container
+    const resultsContainer = document.getElementById('results-container');
+    
+    // Create response display based on whether we have real measurements or just expectations
+    let responseDisplay = "";
+    if (responseDataSource === "Actual Measurements") {
+        responseDisplay = `<p>Tumor Response: <strong>${responseRate.toFixed(1)}%</strong> <span class="badge bg-info">Measured</span></p>`;
+    } else {
+        responseDisplay = `<p>Expected Response: <strong>${expectedResponseRange}</strong> <span class="badge bg-secondary">Protocol-based</span></p>`;
+    }
+    
+    // Updated results HTML with optimistic clinical metrics
+    resultsContainer.innerHTML = `
             <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-3">
