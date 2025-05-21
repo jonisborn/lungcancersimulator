@@ -233,7 +233,52 @@
                                     <h5 class="border-bottom pb-2 mb-3 mt-4">Treatment Strategy</h5>
                                     
                                     <div class="mb-3">
-                                        <label for="treatment-protocol" class="form-label">Treatment Protocol</label>
+                                        <label for="treatment-type" class="form-label">Treatment Type</label>
+                                        <select class="form-select" id="treatment-type">
+                                            <option value="chemotherapy" selected>Chemotherapy</option>
+                                            <option value="targeted">Targeted Therapy</option>
+                                            <option value="immunotherapy">Immunotherapy</option>
+                                            <option value="chemoimmuno">Chemo-Immunotherapy</option>
+                                            <option value="radiation">Radiation Therapy</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3" id="treatment-options-container">
+                                        <label for="treatment-option" class="form-label">Treatment Regimen</label>
+                                        <select class="form-select" id="treatment-option">
+                                            <!-- Chemotherapy options -->
+                                            <option value="carboplatin-pemetrexed" data-type="chemotherapy" selected>Carboplatin + Pemetrexed</option>
+                                            <option value="cisplatin-etoposide" data-type="chemotherapy">Cisplatin + Etoposide</option>
+                                            <option value="carboplatin-paclitaxel" data-type="chemotherapy">Carboplatin + Paclitaxel</option>
+                                            <option value="carboplatin-gemcitabine" data-type="chemotherapy">Carboplatin + Gemcitabine</option>
+                                            
+                                            <!-- Targeted options -->
+                                            <option value="osimertinib" data-type="targeted">Osimertinib (EGFR)</option>
+                                            <option value="alectinib" data-type="targeted">Alectinib (ALK)</option>
+                                            <option value="crizotinib" data-type="targeted">Crizotinib (ROS1)</option>
+                                            <option value="selpercatinib" data-type="targeted">Selpercatinib (RET)</option>
+                                            <option value="dabrafenib-trametinib" data-type="targeted">Dabrafenib + Trametinib (BRAF)</option>
+                                            
+                                            <!-- Immunotherapy options -->
+                                            <option value="pembrolizumab" data-type="immunotherapy">Pembrolizumab (PD-1)</option>
+                                            <option value="nivolumab" data-type="immunotherapy">Nivolumab (PD-1)</option>
+                                            <option value="atezolizumab" data-type="immunotherapy">Atezolizumab (PD-L1)</option>
+                                            <option value="durvalumab" data-type="immunotherapy">Durvalumab (PD-L1)</option>
+                                            
+                                            <!-- Combination options -->
+                                            <option value="carbo-pem-pembro" data-type="chemoimmuno">Carboplatin + Pemetrexed + Pembrolizumab</option>
+                                            <option value="carbo-pacli-pembro" data-type="chemoimmuno">Carboplatin + Paclitaxel + Pembrolizumab</option>
+                                            <option value="chemo-durvalumab" data-type="chemoimmuno">Chemotherapy + Durvalumab</option>
+                                            
+                                            <!-- Radiation options -->
+                                            <option value="sbrt" data-type="radiation">SBRT (Stereotactic Body Radiation)</option>
+                                            <option value="imrt" data-type="radiation">IMRT (Intensity Modulated RT)</option>
+                                            <option value="chemoradiation" data-type="radiation">Concurrent Chemoradiation</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="treatment-protocol" class="form-label">Dosing Protocol</label>
                                         <select class="form-select" id="treatment-protocol">
                                             <option value="CONTINUOUS">Continuous (Maintenance)</option>
                                             <option value="PULSED" selected>Pulsed (Conventional)</option>
@@ -667,6 +712,16 @@
             
             // Setup clinical scenarios
             setupClinicalScenarios();
+            
+            // Setup treatment type filtering
+            const treatmentTypeSelect = document.getElementById('treatment-type');
+            if (treatmentTypeSelect) {
+                // Filter options on page load
+                filterTreatmentOptions();
+                
+                // Add change event listener
+                treatmentTypeSelect.addEventListener('change', filterTreatmentOptions);
+            }
             
             // Initialize tooltips
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
@@ -1117,6 +1172,31 @@
         }
         
         /**
+         * Filter treatment options based on treatment type
+         */
+        function filterTreatmentOptions() {
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOptionSelect = document.getElementById('treatment-option');
+            const options = treatmentOptionSelect.querySelectorAll('option');
+            
+            // Hide all options first
+            options.forEach(option => {
+                option.style.display = 'none';
+            });
+            
+            // Show only options matching the selected type
+            const matchingOptions = treatmentOptionSelect.querySelectorAll(`option[data-type="${treatmentType}"]`);
+            matchingOptions.forEach(option => {
+                option.style.display = '';
+            });
+            
+            // Select the first visible option
+            if (matchingOptions.length > 0) {
+                matchingOptions[0].selected = true;
+            }
+        }
+        
+        /**
          * Run the simulation with current parameters
          */
         function runSimulation() {
@@ -1134,6 +1214,10 @@
             const packYears = parseInt(document.getElementById('pack-years').value) || 0;
             const performanceStatus = parseInt(document.getElementById('performance-status').value) || 1;
             
+            // Get treatment details
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOption = document.getElementById('treatment-option').value;
+            
             const parameters = {
                 // Patient and disease factors
                 cancer_type: cancerType,
@@ -1150,6 +1234,8 @@
                 immune_cells: parseInt(document.getElementById('immune-cells').value) || 50,
                 
                 // Treatment parameters
+                treatment_type: treatmentType,
+                treatment_option: treatmentOption,
                 treatment_protocol: document.getElementById('treatment-protocol').value,
                 drug_strength: parseFloat(document.getElementById('drug-strength').value) || 0.8,
                 drug_decay: parseFloat(document.getElementById('drug-decay').value) || 0.1,
@@ -1275,6 +1361,14 @@
                 smokingInfo = `Current smoker (${packYears} pack-years)`;
             }
             
+            // Get treatment information
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOption = document.getElementById('treatment-option');
+            const selectedOption = treatmentOption.options[treatmentOption.selectedIndex];
+            const treatmentName = selectedOption ? selectedOption.text : "Unknown";
+            const protocolSelect = document.getElementById('treatment-protocol');
+            const protocolName = protocolSelect.options[protocolSelect.selectedIndex].text;
+            
             // Updated results HTML with optimistic clinical metrics
             resultsContainer.innerHTML = `
                 <div class="card shadow-sm mb-4">
@@ -1290,12 +1384,20 @@
                                 <strong>Performance Status:</strong> ECOG ${document.getElementById('performance-status').value}
                             </div>
                             <div class="col-md-4">
-                                <strong>Treatment:</strong> ${document.getElementById('treatment-protocol').value.charAt(0) + document.getElementById('treatment-protocol').value.slice(1).toLowerCase()} Protocol
+                                <strong>Protocol:</strong> ${protocolName}
                             </div>
                         </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong>Treatment:</strong> ${treatmentName}
+                                <span class="badge bg-${getTreatmentBadgeColor(treatmentType)}">${capitalizeFirstLetter(treatmentType)}</span>
+                            </div>
+                        </div>
+                        
                         <div class="alert alert-${clinical.disease_control_rate > 50 ? 'success' : 'warning'}">
                             <h5 class="mb-2">Clinical Response: ${clinical.clinical_response}</h5>
-                            <p class="mb-0">This simulation suggests ${clinical.disease_control_rate > 75 ? "good" : clinical.disease_control_rate > 40 ? "moderate" : "limited"} disease control with the selected treatment approach.</p>
+                            <p class="mb-0">This simulation suggests ${clinical.disease_control_rate > 75 ? "good" : clinical.disease_control_rate > 40 ? "moderate" : "limited"} disease control with ${treatmentName}.</p>
                         </div>
                     </div>
                 </div>
@@ -1323,11 +1425,107 @@
                                 <p>Treatment Efficacy: <strong>${clinical.treatment_efficacy_score.toFixed(1)}/10</strong></p>
                                 <p>Quality of Life: <strong>${clinical.quality_of_life}</strong></p>
                                 <p>Side Effects: <strong>${clinical.side_effect_profile}</strong></p>
+                                ${getTreatmentSpecificOutcomes(treatmentType, treatmentName, clinical)}
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                ${getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus)}
             `;
+        }
+        
+        /**
+         * Get color for treatment type badge
+         */
+        function getTreatmentBadgeColor(treatmentType) {
+            switch(treatmentType) {
+                case 'chemotherapy': return 'secondary';
+                case 'targeted': return 'info';
+                case 'immunotherapy': return 'success';
+                case 'chemoimmuno': return 'primary';
+                case 'radiation': return 'warning';
+                default: return 'dark';
+            }
+        }
+        
+        /**
+         * Capitalize first letter of a string
+         */
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        
+        /**
+         * Get treatment-specific outcome information
+         */
+        function getTreatmentSpecificOutcomes(treatmentType, treatmentName, clinical) {
+            switch(treatmentType) {
+                case 'chemotherapy':
+                    return `<p>Myelosuppression Risk: <strong>Moderate</strong></p>`;
+                case 'targeted':
+                    if (treatmentName.includes('EGFR')) {
+                        return `<p>Rash Management: <strong>Topical steroids recommended</strong></p>`;
+                    } else if (treatmentName.includes('ALK')) {
+                        return `<p>CNS Penetration: <strong>Excellent</strong></p>`;
+                    }
+                    return `<p>Target Specificity: <strong>High</strong></p>`;
+                case 'immunotherapy':
+                    return `<p>Immune-related AEs: <strong>Monitor thyroid function</strong></p>`;
+                case 'chemoimmuno':
+                    return `<p>Synergistic Effect: <strong>Positive</strong></p>`;
+                case 'radiation':
+                    return `<p>Pneumonitis Risk: <strong>Low to moderate</strong></p>`;
+                default:
+                    return '';
+            }
+        }
+        
+        /**
+         * Generate treatment recommendations based on simulation results
+         */
+        function getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus) {
+            const diseaseControlRate = clinical.disease_control_rate;
+            
+            // Create specific recommendation based on results
+            let recommendationText = '';
+            let recommendationClass = 'info';
+            
+            if (diseaseControlRate > 75) {
+                recommendationText = `<p>Continue ${treatmentName} with current dosing protocol.</p>`;
+                recommendationClass = 'success';
+            } else if (diseaseControlRate > 40) {
+                if (treatmentType === 'chemotherapy') {
+                    recommendationText = `<p>Consider adding maintenance therapy following initial response.</p>`;
+                } else if (treatmentType === 'targeted') {
+                    recommendationText = `<p>Monitor for resistance mutations and consider next-generation inhibitors if progression occurs.</p>`;
+                } else if (treatmentType === 'immunotherapy') {
+                    recommendationText = `<p>Continue treatment beyond initial progression if clinical benefit persists.</p>`;
+                }
+            } else {
+                recommendationText = `<p>Consider alternative therapy or clinical trial eligibility.</p>`;
+                recommendationClass = 'warning';
+            }
+            
+            // Add molecular testing recommendations
+            let testingRecommendation = '';
+            if (cancerType === 'NSCLC' && treatmentType !== 'targeted' && smokingStatus === 'never') {
+                testingRecommendation = `<p>Recommend comprehensive genomic profiling to identify targetable alterations (EGFR, ALK, ROS1, RET, NTRK).</p>`;
+            } else if (cancerType === 'NSCLC' && treatmentType !== 'immunotherapy') {
+                testingRecommendation = `<p>Consider PD-L1 testing to assess immunotherapy eligibility.</p>`;
+            }
+            
+            return `
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-${recommendationClass} text-white">
+                    <h5 class="mb-0">Clinical Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    ${recommendationText}
+                    ${testingRecommendation}
+                    <p>Follow-up imaging recommended in ${clinical.treatment_free_interval < 3 ? '6 weeks' : '8-12 weeks'}.</p>
+                </div>
+            </div>`;
         }
     </script>
 </body>
