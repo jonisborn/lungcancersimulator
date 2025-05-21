@@ -142,6 +142,11 @@
                                                 <option value="NSCLC" selected>NSCLC</option>
                                                 <option value="SCLC">SCLC</option>
                                             </select>
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle"></i> NSCLC (Non-small cell) represents 85% of cases
+                                                </small>
+                                            </div>
                                         </div>
                                         <div class="col-md-6">
                                             <label for="disease-stage" class="form-label">Disease Stage</label>
@@ -151,6 +156,49 @@
                                                 <option value="3" selected>Stage III</option>
                                                 <option value="4">Stage IV</option>
                                             </select>
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle"></i> Stage significantly impacts treatment approach
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Stage Info Cards -->
+                                    <div class="mb-3">
+                                        <div class="row row-cols-2 g-2">
+                                            <div class="col">
+                                                <div class="card h-100 border-success">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Early-Stage (I-II)</h6>
+                                                        <p class="card-text small">Potentially curable with surgery or SBRT. Consider adjuvant therapy for higher risk.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-warning">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Locally Advanced (III)</h6>
+                                                        <p class="card-text small">Multimodal treatment with chemoradiation. Consider immunotherapy for stage III.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-primary">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">NSCLC Approach</h6>
+                                                        <p class="card-text small">Test for biomarkers (EGFR, ALK, ROS1, PD-L1) to guide therapy selection.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-danger">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Advanced (IV)</h6>
+                                                        <p class="card-text small">Systemic therapy based on molecular testing. Consider local approaches for oligometastatic disease.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -206,6 +254,16 @@
                                             <option value="2">2 - Ambulatory but unable to work</option>
                                             <option value="3">3 - Limited self-care</option>
                                         </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Performance status is a major factor in treatment selection and prognosis
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-success">0-1</span> Good candidates for aggressive therapy
+                                            <span class="badge bg-warning ms-2">2</span> May require dose adjustments
+                                            <span class="badge bg-danger ms-2">3+</span> Consider palliative approaches
+                                        </div>
                                     </div>
                                     
                                     <!-- Initial Cell Populations -->
@@ -307,6 +365,16 @@
                                             <span id="drug-strength-value" class="slider-value">0.80</span>
                                         </label>
                                         <input type="range" class="form-range" id="drug-strength" min="0" max="1" value="0.8" step="0.05">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Low</small>
+                                            <small class="text-muted">Medium</small>
+                                            <small class="text-muted">High</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Represents relative drug efficacy (e.g., standard dose vs. reduced dose)
+                                            </small>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -315,6 +383,16 @@
                                             <span id="drug-decay-value" class="slider-value">0.10</span>
                                         </label>
                                         <input type="range" class="form-range" id="drug-decay" min="0.05" max="0.3" value="0.1" step="0.01">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Slow</small>
+                                            <small class="text-muted">Normal</small>
+                                            <small class="text-muted">Rapid</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Rate at which drug is cleared from the body (affects duration of action)
+                                            </small>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -323,6 +401,16 @@
                                             <span id="dose-frequency-value" class="slider-value">7</span>
                                         </label>
                                         <input type="range" class="form-range" id="dose-frequency" min="1" max="21" value="7" step="1">
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Time between doses (daily = 1, weekly = 7, etc.)
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-primary">1-3 days</span> Dense scheduling
+                                            <span class="badge bg-info ms-2">7 days</span> Weekly
+                                            <span class="badge bg-secondary ms-2">14-21 days</span> Bi-weekly/Monthly
+                                        </div>
                                     </div>
                                     
                                     <!-- Action Buttons -->
