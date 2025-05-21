@@ -387,6 +387,60 @@
                 </div>
                 
                 <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <!-- Stage I NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="stage1-nsclc">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Stage I NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage non-small cell lung cancer suitable for curative-intent treatment.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary biomarker-badge">T1N0M0</span>
+                                    <span class="badge bg-secondary biomarker-badge">PD-L1 5%</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IA2 (2.3cm nodule)</li>
+                                    <li class="list-group-item bg-transparent">Excellent surgical candidate</li>
+                                    <li class="list-group-item bg-transparent">Low risk of recurrence</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-success load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stage II NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="stage2-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Stage II NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Localized non-small cell lung cancer with minimal nodal involvement.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary biomarker-badge">T2N1M0</span>
+                                    <span class="badge bg-secondary biomarker-badge">KRAS+</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IIB</li>
+                                    <li class="list-group-item bg-transparent">Surgical resection with adjuvant therapy</li>
+                                    <li class="list-group-item bg-transparent">Moderate recurrence risk</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- EGFR+ NSCLC Scenario -->
                     <div class="col">
                         <div class="card scenario-card h-100" data-scenario="egfr-nsclc">
@@ -861,6 +915,42 @@
         function loadClinicalScenario(scenarioId) {
             // Define scenario presets
             const scenarios = {
+                'stage1-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '1',
+                    age: 62,
+                    smokingStatus: 'former',
+                    packYears: 20,
+                    performanceStatus: '0',
+                    sensitiveCells: 50,
+                    resistantCells: 2,
+                    stemCells: 1,
+                    immuneCells: 120,
+                    treatmentType: 'radiation',
+                    treatmentOption: 'sbrt',
+                    protocol: 'PULSED',
+                    drugStrength: 0.95,
+                    drugDecay: 0.1,
+                    doseFrequency: 1
+                },
+                'stage2-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 58,
+                    smokingStatus: 'former',
+                    packYears: 15,
+                    performanceStatus: '0',
+                    sensitiveCells: 80,
+                    resistantCells: 5,
+                    stemCells: 2,
+                    immuneCells: 90,
+                    treatmentType: 'chemotherapy',
+                    treatmentOption: 'carboplatin-paclitaxel',
+                    protocol: 'PULSED',
+                    drugStrength: 0.9,
+                    drugDecay: 0.15,
+                    doseFrequency: 21
+                },
                 'egfr-nsclc': {
                     cancerType: 'NSCLC',
                     diseaseStage: '4',
@@ -872,6 +962,8 @@
                     resistantCells: 5,
                     stemCells: 10,
                     immuneCells: 30,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'osimertinib',
                     protocol: 'CONTINUOUS',
                     drugStrength: 0.9,
                     drugDecay: 0.15,
@@ -888,6 +980,8 @@
                     resistantCells: 3,
                     stemCells: 8,
                     immuneCells: 40,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'alectinib',
                     protocol: 'CONTINUOUS',
                     drugStrength: 0.95,
                     drugDecay: 0.1,
@@ -904,6 +998,8 @@
                     resistantCells: 20,
                     stemCells: 5,
                     immuneCells: 80,
+                    treatmentType: 'immunotherapy',
+                    treatmentOption: 'pembrolizumab',
                     protocol: 'CONTINUOUS',
                     drugStrength: 0.7,
                     drugDecay: 0.05,
@@ -920,6 +1016,8 @@
                     resistantCells: 30,
                     stemCells: 15,
                     immuneCells: 25,
+                    treatmentType: 'chemoimmuno',
+                    treatmentOption: 'chemo-durvalumab',
                     protocol: 'PULSED',
                     drugStrength: 0.85,
                     drugDecay: 0.2,
@@ -955,6 +1053,18 @@
             setSliderValue('resistant-cells', scenario.resistantCells);
             setSliderValue('stem-cells', scenario.stemCells);
             setSliderValue('immune-cells', scenario.immuneCells);
+            
+            // Treatment parameters
+            document.getElementById('treatment-type').value = scenario.treatmentType;
+            
+            // Trigger the filter to update treatment options
+            filterTreatmentOptions();
+            
+            // Set the specific treatment after filtering
+            setTimeout(() => {
+                // This is delayed slightly to ensure the filtering has completed
+                document.getElementById('treatment-option').value = scenario.treatmentOption;
+            }, 50);
             
             // Treatment protocol
             document.getElementById('treatment-protocol').value = scenario.protocol;
