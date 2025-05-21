@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Lung Cancer Simulator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .container { max-width: 1200px; margin-top: 30px; }
+        .chart-container { height: 400px; margin-bottom: 30px; }
+        .spinner-border { width: 3rem; height: 3rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4 text-center">Lung Cancer Evolution Simulator</h1>
+        <p class="lead text-center mb-5">Basic version for testing functionality</p>
+        
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Simulation Parameters</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="simulation-form">
+                            <div class="mb-3">
+                                <label for="sensitive-cells" class="form-label">Sensitive Tumor Cells</label>
+                                <input type="range" class="form-range" id="sensitive-cells" min="0" max="500" value="100" step="10">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="sensitive-value">100</small>
+                                    <small>500</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="resistant-cells" class="form-label">Resistant Clone Cells</label>
+                                <input type="range" class="form-range" id="resistant-cells" min="0" max="100" value="10" step="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="resistant-value">10</small>
+                                    <small>100</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="stem-cells" class="form-label">Cancer Stem-like Cells</label>
+                                <input type="range" class="form-range" id="stem-cells" min="0" max="50" value="5" step="1">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="stem-value">5</small>
+                                    <small>50</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="immune-cells" class="form-label">CD8+ Cytotoxic T Cells</label>
+                                <input type="range" class="form-range" id="immune-cells" min="0" max="200" value="50" step="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="immune-value">50</small>
+                                    <small>200</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="treatment-protocol" class="form-label">Treatment Protocol</label>
+                                <select class="form-select" id="treatment-protocol">
+                                    <option value="CONTINUOUS">Continuous</option>
+                                    <option value="PULSED" selected>Pulsed</option>
+                                    <option value="METRONOMIC">Metronomic</option>
+                                    <option value="ADAPTIVE">Adaptive</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="drug-strength" class="form-label">Drug Strength</label>
+                                <input type="range" class="form-range" id="drug-strength" min="0" max="1" value="0.8" step="0.1">
+                                <div class="d-flex justify-content-between">
+                                    <small>0</small>
+                                    <small id="drug-strength-value">0.8</small>
+                                    <small>1.0</small>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Run Simulation</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <!-- Spinner -->
+                <div id="spinner" class="text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Running simulation...</p>
+                </div>
+                
+                <!-- Results -->
+                <div id="results" class="d-none">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Treatment Results</h5>
+                        </div>
+                        <div class="card-body" id="results-content">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Cell Populations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="cell-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Drug Concentration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="drug-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Utility functions
+        function updateSliderValue(sliderId, valueId) {
+            const slider = document.getElementById(sliderId);
+            const display = document.getElementById(valueId);
+            
+            if (slider && display) {
+                display.textContent = slider.value;
+                
+                slider.addEventListener('input', function() {
+                    display.textContent = this.value;
+                });
+            }
+        }
+        
+        // Global chart objects
+        let cellChart = null;
+        let drugChart = null;
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing basic simulator...");
+            
+            // Initialize slider values
+            updateSliderValue('sensitive-cells', 'sensitive-value');
+            updateSliderValue('resistant-cells', 'resistant-value');
+            updateSliderValue('stem-cells', 'stem-value');
+            updateSliderValue('immune-cells', 'immune-value');
+            updateSliderValue('drug-strength', 'drug-strength-value');
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Set up form submission
+            document.getElementById('simulation-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                runSimulation();
+            });
+        });
+        
+        // Initialize empty charts
+        function initializeCharts() {
+            // Cell population chart
+            const cellCtx = document.getElementById('cell-chart').getContext('2d');
+            cellChart = new Chart(cellCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 100}, (_, i) => i),
+                    datasets: [
+                        {
+                            label: 'Sensitive Tumor Cells',
+                            data: Array.from({length: 100}, () => 0),
+                            borderColor: 'rgba(52, 152, 219, 0.8)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Resistant Clone Cells',
+                            data: Array.from({length: 100}, () => 0),
+                            borderColor: 'rgba(231, 76, 60, 0.8)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Cancer Stem-like Cells',
+                            data: Array.from({length: 100}, () => 0),
+                            borderColor: 'rgba(243, 156, 18, 0.8)',
+                            backgroundColor: 'rgba(243, 156, 18, 0.2)',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cell Count'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (days)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Drug level chart
+            const drugCtx = document.getElementById('drug-chart').getContext('2d');
+            drugChart = new Chart(drugCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 100}, (_, i) => i),
+                    datasets: [
+                        {
+                            label: 'Drug Concentration',
+                            data: Array.from({length: 100}, () => 0),
+                            borderColor: 'rgba(46, 204, 113, 0.8)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            title: {
+                                display: true,
+                                text: 'Concentration'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (days)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Run simulation
+        function runSimulation() {
+            console.log("Running simulation...");
+            
+            // Show spinner, hide results
+            document.getElementById('spinner').classList.remove('d-none');
+            document.getElementById('results').classList.add('d-none');
+            
+            // Get parameters
+            const parameters = {
+                sensitive_cells: parseInt(document.getElementById('sensitive-cells').value),
+                resistant_cells: parseInt(document.getElementById('resistant-cells').value),
+                stem_cells: parseInt(document.getElementById('stem-cells').value),
+                immune_cells: parseInt(document.getElementById('immune-cells').value),
+                treatment_protocol: document.getElementById('treatment-protocol').value,
+                drug_strength: parseFloat(document.getElementById('drug-strength').value),
+                drug_decay: 0.1,
+                dose_frequency: 7,
+                time_steps: 100
+            };
+            
+            // Send to server
+            fetch('/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(parameters)
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log("Simulation complete", data);
+                
+                // Update charts
+                updateCharts(data.simulation_data);
+                
+                // Update results
+                displayResults(data.clinical_summary);
+                
+                // Hide spinner, show results
+                document.getElementById('spinner').classList.add('d-none');
+                document.getElementById('results').classList.remove('d-none');
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                
+                // Hide spinner
+                document.getElementById('spinner').classList.add('d-none');
+                
+                // Show error
+                document.getElementById('results').classList.remove('d-none');
+                document.getElementById('results-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>Simulation Error</h5>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Update charts with data
+        function updateCharts(simData) {
+            if (!simData) return;
+            
+            // Get data arrays
+            const timePoints = Array.from({length: 100}, (_, i) => i);
+            const sensitiveData = simData.sensitive || [];
+            const resistantData = simData.resistant || [];
+            const stemcellData = simData.stemcell || [];
+            const drugLevelData = simData.drug_level || [];
+            
+            // Normalize data length
+            const truncateToLength = (arr, length) => arr.slice(0, length);
+            
+            // Update cell chart
+            if (cellChart) {
+                cellChart.data.labels = timePoints;
+                cellChart.data.datasets[0].data = truncateToLength(sensitiveData, 100);
+                cellChart.data.datasets[1].data = truncateToLength(resistantData, 100);
+                cellChart.data.datasets[2].data = truncateToLength(stemcellData, 100);
+                cellChart.update();
+            }
+            
+            // Update drug chart
+            if (drugChart) {
+                drugChart.data.labels = timePoints;
+                drugChart.data.datasets[0].data = truncateToLength(drugLevelData, 100);
+                drugChart.update();
+            }
+        }
+        
+        // Display results
+        function displayResults(clinical) {
+            if (!clinical) return;
+            
+            const resultsContent = document.getElementById('results-content');
+            
+            resultsContent.innerHTML = `
+                <p>Clinical Response: <strong>${clinical.clinical_response || 'Unknown'}</strong></p>
+                <p>Response Rate: <strong>${clinical.treatment_response_rate || 0}%</strong></p>
+                <p>Disease Control: <strong>${clinical.disease_control_rate || 0}%</strong></p>
+                <p>Quality of Life: <strong>${clinical.quality_of_life || 'Unknown'}</strong></p>
+            `;
+        }
+    </script>
+</body>
+</html>

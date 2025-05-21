@@ -1,0 +1,90 @@
+/* Custom styling for cancer simulator */
+
+/* Cell type color indicators */
+.cell-indicator {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.sensitive-color {
+    background-color: #3498db;
+}
+
+.resistant-color {
+    background-color: #e74c3c;
+}
+
+.stemcell-color {
+    background-color: #f39c12;
+}
+
+/* Slider customization */
+.form-range::-webkit-slider-thumb {
+    cursor: pointer;
+}
+
+/* Make cards have consistent heights within rows */
+.card {
+    height: 100%;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    cursor: default;
+}
+
+/* Collapsible card header styling */
+.card-header[data-bs-toggle="collapse"] {
+    cursor: pointer;
+}
+
+.card-header[data-bs-toggle="collapse"]:hover {
+    background-color: var(--bs-dark);
+}
+
+/* Game matrix styling */
+.matrix-input {
+    width: 100%;
+    text-align: center;
+}
+
+/* Results display styling */
+#results-container {
+    min-height: 120px;
+}
+
+.result-stat {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.result-stat h5 {
+    margin-bottom: 5px;
+}
+
+.eradicated-true {
+    background-color: #198754;
+    color: white;
+}
+
+.eradicated-false {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-header h4 {
+        font-size: 1.2rem;
+    }
+    
+    h5 {
+        font-size: 1rem;
+    }
+}

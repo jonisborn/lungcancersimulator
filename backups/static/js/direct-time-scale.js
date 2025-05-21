@@ -1,0 +1,1 @@
+// We don't need this file anymore since we're using the direct function in the HTML
