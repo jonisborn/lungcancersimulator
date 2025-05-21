@@ -205,31 +205,39 @@
                             <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">Initial Cell Populations</h5>
                             
                             <div class="mb-3">
-                                <label for="sensitive-cells" class="form-label">
-                                    Drug-sensitive Cells: <span id="sensitive-value">100</span>
+                                <label for="sensitive-cells" class="form-label" data-bs-toggle="tooltip" title="Lung cancer cells responsive to treatment (driver mutation positive)">
+                                    Sensitive Tumor Cells: <span id="sensitive-value">100</span> <small class="text-muted">(×10⁶ cells)</small>
                                 </label>
                                 <input type="range" class="form-range" id="sensitive-cells" min="0" max="1000" value="100" step="10">
                             </div>
                             
                             <div class="mb-3">
-                                <label for="resistant-cells" class="form-label">
-                                    Drug-resistant Cells: <span id="resistant-value">10</span>
+                                <label for="resistant-cells" class="form-label" data-bs-toggle="tooltip" title="Tumor cells with acquired or intrinsic resistance to therapy">
+                                    Resistant Clone Cells: <span id="resistant-value">10</span> <small class="text-muted">(×10⁶ cells)</small>
                                 </label>
                                 <input type="range" class="form-range" id="resistant-cells" min="0" max="500" value="10" step="5">
                             </div>
                             
                             <div class="mb-3">
-                                <label for="stem-cells" class="form-label">
-                                    Cancer Stem Cells: <span id="stem-value">5</span>
+                                <label for="stem-cells" class="form-label" data-bs-toggle="tooltip" title="Tumor-initiating cells with high survival capacity and drug resistance">
+                                    Cancer Stem-like Cells: <span id="stem-value">5</span> <small class="text-muted">(×10⁶ cells)</small>
                                 </label>
                                 <input type="range" class="form-range" id="stem-cells" min="0" max="100" value="5" step="1">
                             </div>
                             
                             <div class="mb-3">
-                                <label for="immune-cells" class="form-label">
-                                    Immune Cells: <span id="immune-value">50</span>
+                                <label for="immune-cells" class="form-label" data-bs-toggle="tooltip" title="CD8+ T Cells and NK cells actively fighting tumor">
+                                    CD8+ Cytotoxic T Cells: <span id="immune-value">50</span> <small class="text-muted">(×10⁶ cells)</small>
                                 </label>
                                 <input type="range" class="form-range" id="immune-cells" min="0" max="200" value="50" step="5">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="myeloid-cells" class="form-label" data-bs-toggle="tooltip" title="Myeloid-Derived Suppressor Cells (MDSCs) inhibit immune function">
+                                    MDSCs: <span id="myeloid-value">30</span> <small class="text-muted">(×10⁶ cells)</small>
+                                </label>
+                                <input type="range" class="form-range" id="myeloid-cells" min="0" max="200" value="30" step="5">
+                                <input type="hidden" id="myeloid-cells-value" name="myeloid_cells" value="30">
                             </div>
                             
                             <h5 class="mb-3 mt-4">Treatment Parameters</h5>

@@ -1,0 +1,97 @@
+🔬 HIGH-PRIORITY CORRECTIONS & ENHANCEMENTS
+1. Biological Labels Are Too Generic
+
+    Terms like “Population A” or “Population B” are not meaningful for clinical or research use.
+
+✅ Replace with specific cell types, e.g.:
+
+- Sensitive Tumor Cells (ALK+)
+- Resistant Tumor Clones
+- CD8+ T Cells
+- NK Cells
+- Myeloid-Derived Suppressor Cells (optional)
+
+2. Simulation Output Lacks Clinical Units
+
+    The Y-axis is in arbitrary units.
+
+✅ Recommendation:
+
+    Show population in relative % or estimated cell count (e.g. 1e6 cells)
+
+    Allow user to toggle between log scale and linear
+
+3. Lack of Time Control & Realistic Dosing
+
+    Time axis is unlabeled (days? weeks?).
+
+    No dose control or drug half-life behavior.
+
+✅ Add:
+
+- Time unit toggle (days/weeks/months)
+- Drug administration schedule (continuous, pulsed, adaptive)
+- Half-life input (tied to drug decay curve)
+
+4. Immune System Is Oversimplified
+
+    Appears as one undifferentiated immune response.
+
+    Doesn't reflect immune suppression by tumor or feedback inhibition.
+
+✅ Suggested Model Expansion:
+
+    Add variable for tumor-mediated suppression (IL-10/TGF-β analog)
+
+    Add parameter: immune exhaustion over time
+
+    Plot immune activation vs suppression balance
+
+5. No Resistance Evolution Yet
+
+    Resistance is static — tumor populations are pre-defined as resistant or not.
+
+✅ Add Evolutionary Game Theory Layer:
+
+# Simple version:
+if treatment_pressure > threshold:
+    mutation_rate += f(environmental_pressure)
+    resistant_cells += mutated_cells
+
+# Output:
+“% resistant cells increasing under drug exposure”
+
+6. Graphs Need Event Markers
+
+    Treatment start, stop, or transitions aren't labeled on the graph.
+
+✅ Add event markers to plot, e.g.:
+
+- Vertical line on Day 20: “Drug ON”
+- Shaded area: “Immunotherapy phase”
+
+7. No Clinical Scenario Templates
+
+Currently, the user has to enter abstract numbers.
+
+✅ Add drop-down presets, such as:
+
+- Scenario 1: ALK+ NSCLC on Brigatinib
+- Scenario 2: EGFR-mutant NSCLC on Osimertinib
+- Scenario 3: High PD-L1 NSCLC on Pembrolizumab
+
+Each with pre-filled growth/resistance/immune parameters.
+8. Missing Real-World Biomarker Integration
+
+✅ Add:
+
+- ctDNA output curve (reflecting tumor burden)
+- IL-6 / CRP curve (reflecting inflammation)
+- PD-L1 score estimate (adjusts immune effect)
+
+9. User Interface Suggestions
+
+    Add tooltips on each parameter: e.g. “Drug Efficacy: reduction in tumor growth per time unit”
+
+    Allow real-time adjustment: sliders that auto-update simulation
+
