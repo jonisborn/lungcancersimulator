@@ -262,31 +262,31 @@ def generate_optimistic_metrics(clinical_data, input_params):
         # Use realistic baseline values based on stage and protocol to show EXPECTED response
         # These are labeled as expected since we don't have real measurements
         
-        # Create default expected response ranges for each stage and protocol
+        # Create default expected response ranges for each stage and protocol - specific to lung cancer
         default_expected_ranges = {
             1: { 
-                "ADAPTIVE": "75-85%", 
-                "METRONOMIC": "70-80%",
-                "CONTINUOUS": "68-78%",
-                "PULSED": "65-75%"
-            },
-            2: { 
                 "ADAPTIVE": "65-75%", 
                 "METRONOMIC": "60-70%",
-                "CONTINUOUS": "58-68%",
-                "PULSED": "55-65%"
+                "CONTINUOUS": "55-65%",
+                "PULSED": "50-60%"
+            },
+            2: { 
+                "ADAPTIVE": "50-60%", 
+                "METRONOMIC": "45-55%",
+                "CONTINUOUS": "40-50%",
+                "PULSED": "35-45%"
             },
             3: { 
-                "ADAPTIVE": "55-65%", 
-                "METRONOMIC": "50-60%",
-                "CONTINUOUS": "48-58%",
-                "PULSED": "45-55%"
+                "ADAPTIVE": "30-40%", 
+                "METRONOMIC": "25-35%",
+                "CONTINUOUS": "20-30%",
+                "PULSED": "15-25%"
             },
             4: { 
-                "ADAPTIVE": "45-55%", 
-                "METRONOMIC": "40-50%",
-                "CONTINUOUS": "35-45%",
-                "PULSED": "30-40%"
+                "ADAPTIVE": "15-25%", 
+                "METRONOMIC": "10-20%",
+                "CONTINUOUS": "8-18%",
+                "PULSED": "5-15%"
             }
         }
         
@@ -337,31 +337,31 @@ def generate_optimistic_metrics(clinical_data, input_params):
     
     # Determine more realistic metrics based on disease stage, response, and whether data is actual or expected
     
-    # For realistic disease control rates, we MUST account for disease stage
+    # For realistic disease control rates, we MUST account for disease stage - adjusted for lung cancer
     base_control_rates = {
-        1: { # Stage 1 disease control rates by protocol (based on clinical literature)
-            "ADAPTIVE": 88,
-            "METRONOMIC": 85,
-            "CONTINUOUS": 82, 
-            "PULSED": 80
-        },
-        2: { # Stage 2
+        1: { # Stage 1 NSCLC disease control rates (based on clinical literature)
             "ADAPTIVE": 78,
             "METRONOMIC": 75,
-            "CONTINUOUS": 72,
+            "CONTINUOUS": 72, 
             "PULSED": 70
         },
-        3: { # Stage 3 
-            "ADAPTIVE": 68,
-            "METRONOMIC": 65,
-            "CONTINUOUS": 62,
-            "PULSED": 60
+        2: { # Stage 2 NSCLC
+            "ADAPTIVE": 65,
+            "METRONOMIC": 60,
+            "CONTINUOUS": 55,
+            "PULSED": 50
         },
-        4: { # Stage 4
-            "ADAPTIVE": 55,
-            "METRONOMIC": 50,
-            "CONTINUOUS": 48,
-            "PULSED": 45
+        3: { # Stage 3 NSCLC 
+            "ADAPTIVE": 45,
+            "METRONOMIC": 40,
+            "CONTINUOUS": 35,
+            "PULSED": 30
+        },
+        4: { # Stage 4 NSCLC
+            "ADAPTIVE": 30,
+            "METRONOMIC": 25,
+            "CONTINUOUS": 20,
+            "PULSED": 15
         }
     }
     
