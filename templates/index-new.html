@@ -620,9 +620,9 @@
                                             </div>
                                             
                                             <div class="btn-group btn-group-sm time-scale-btns">
-                                                <button type="button" class="btn btn-sm btn-primary active" id="chart-days-btn">Days</button>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" id="chart-weeks-btn">Weeks</button>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" id="chart-months-btn">Months</button>
+                                                <button type="button" class="btn btn-sm btn-primary active" onclick="setTimeScale('days')">Days</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setTimeScale('weeks')">Weeks</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setTimeScale('months')">Months</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1075,6 +1075,53 @@
         // Global chart objects
         let populationChart = null;
         let drugLevelChart = null;
+        
+        // Time scale conversion function
+        function setTimeScale(scale) {
+            console.log("Changing time scale to:", scale);
+            
+            // Make sure charts exist
+            if (!populationChart || !drugLevelChart) {
+                console.warn("Charts not initialized yet");
+                return;
+            }
+            
+            // Update button styles
+            document.querySelectorAll('.time-scale-btns button').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Find the clicked button and update its style
+            document.querySelector(`.time-scale-btns button:nth-child(${scale === 'days' ? 1 : scale === 'weeks' ? 2 : 3})`).classList.add('btn-primary');
+            document.querySelector(`.time-scale-btns button:nth-child(${scale === 'days' ? 1 : scale === 'weeks' ? 2 : 3})`).classList.remove('btn-outline-primary');
+            
+            // Create new time labels based on scale
+            const timePoints = Array.from({length: 100}, (_, i) => i);
+            let newLabels = timePoints;
+            let xAxisTitle = 'Time (days)';
+            
+            if (scale === 'weeks') {
+                newLabels = timePoints.map(day => (day / 7).toFixed(1));
+                xAxisTitle = 'Time (weeks)';
+            } else if (scale === 'months') {
+                newLabels = timePoints.map(day => (day / 30).toFixed(1));
+                xAxisTitle = 'Time (months)';
+            }
+            
+            // Update population chart
+            populationChart.data.labels = newLabels;
+            populationChart.options.scales.x.title.text = xAxisTitle;
+            populationChart.update();
+            
+            // Update drug level chart
+            drugLevelChart.data.labels = newLabels;
+            drugLevelChart.options.scales.x.title.text = xAxisTitle;
+            drugLevelChart.update();
+            
+            console.log("Time scale updated to:", scale);
+        }
         
         // Initialize when DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
