@@ -17,9 +17,9 @@ const chartColors = {
 };
 
 // Initialize charts with empty data
-let populationChart = null;
-let drugChart = null;
-let fitnessChart = null;
+window.populationChart = null;
+window.drugLevelChart = null;
+window.fitnessChart = null;
 
 // Boolean to track log scale state
 let isLogScale = false;
@@ -29,8 +29,9 @@ let isLogScale = false;
  */
 function initializeCharts() {
     // Population Chart
-    const popCtx = document.getElementById('population-chart').getContext('2d');
-    populationChart = new Chart(popCtx, {
+    const popCtx = document.getElementById('population-chart')?.getContext('2d');
+    if (popCtx) {
+        window.populationChart = new Chart(popCtx, {
         type: 'line',
         data: {
             labels: [],
