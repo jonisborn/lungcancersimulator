@@ -14,7 +14,7 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 @app.route('/')
 def index():
     """Render the main simulation page"""
-    return render_template('index.html')
+    return render_template('index-new.html')
     
 @app.route('/simple')
 def simple():
