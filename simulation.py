@@ -393,11 +393,39 @@ class CancerSimulation:
         # Get patient-specific data from parameters if available
         patient_data = getattr(self, 'patient_data', {})
         
+        # Lung cancer specific factors - smoking status and pack years
+        # References:
+        # - Khuder SA. Effect of cigarette smoking on major histological types of lung cancer: a meta-analysis. Lung Cancer. 2001
+        # - Tammemagi CM, et al. Impact of lung cancer screening results on smoking cessation. J Natl Cancer Inst. 2014
+        # - Pinsky PF, et al. Extended lung cancer incidence follow-up in the Mayo Lung Project and overdiagnosis. J Natl Cancer Inst. 2013
+        
+        # Apply smoking status modifier to survival - major factor in lung cancer outcomes
+        smoking_status = patient_data.get('smoking_status', 'former')
+        smoking_factor = 1.0
+        if smoking_status == 'never':
+            smoking_factor = 1.2  # Never smokers have better outcomes in lung cancer
+        elif smoking_status == 'former':
+            smoking_factor = 1.0  # Reference group
+        elif smoking_status == 'current':
+            smoking_factor = 0.8  # Current smokers have worse outcomes
+            
+        # Apply pack years modifier - dose-dependent effect on survival
+        pack_years = patient_data.get('pack_years', 30)
+        pack_years_factor = 1.0
+        if pack_years <= 10:
+            pack_years_factor = 1.1  # Light smoking history
+        elif pack_years <= 30:
+            pack_years_factor = 1.0  # Moderate smoking history (reference)
+        elif pack_years <= 50:
+            pack_years_factor = 0.9  # Heavy smoking history
+        else:
+            pack_years_factor = 0.8  # Very heavy smoking history
+            
         # Patient age effect on survival based on SEER database analysis and clinical outcomes studies
-        # References: 
+        # References for lung cancer specifically: 
         # - Surveillance, Epidemiology, and End Results (SEER) Program Database
-        # - Hamood R, et al. Contribution of age to breast cancer survival effect. JAMA Oncol. 2018
-        # - Quaglia A, et al. The cancer survival gap between elderly and middle-aged patients in Europe is widening. Eur J Cancer. 2009
+        # - Owonikoko TK, et al. Lung cancer in elderly patients: an analysis of the surveillance, epidemiology, and end results database. J Clin Oncol. 2007
+        # - Hayat MJ, et al. Cancer statistics, trends, and multiple primary cancer analyses from the Surveillance, Epidemiology, and End Results (SEER) Program. Oncologist. 2007
         age = self.patient.age
         if age < 40:
             age_factor = 1.25  # Significantly better prognosis for young patients

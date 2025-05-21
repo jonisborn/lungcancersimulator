@@ -232,6 +232,9 @@ function setupSliderListeners() {
     setupSlider('patient-immune-status', 'patient-immune-status-value', 1);
     setupSlider('immune-strength', 'immune-strength-value', 2);
     
+    // Lung cancer specific parameters
+    setupSlider('pack-years', 'pack-years-value', 0);
+    
     // Evolutionary parameter sliders
     setupSlider('mutation-rate', 'mutation-rate-value', 3);
     setupSlider('chaos-level', 'chaos-level-value', 2);

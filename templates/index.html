@@ -119,14 +119,35 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Performance Status (ECOG)</label>
-                                    <select class="form-select" id="performance-status">
-                                        <option value="0">0 - Fully active</option>
-                                        <option value="1" selected>1 - Restricted but ambulatory</option>
-                                        <option value="2">2 - Ambulatory, capable of self-care</option>
-                                        <option value="3">3 - Limited self-care</option>
-                                        <option value="4">4 - Completely disabled</option>
-                                    </select>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Performance Status (ECOG)</label>
+                                        <select class="form-select" id="performance-status">
+                                            <option value="0">0 - Fully active</option>
+                                            <option value="1" selected>1 - Restricted but ambulatory</option>
+                                            <option value="2">2 - Ambulatory, capable of self-care</option>
+                                            <option value="3">3 - Limited self-care</option>
+                                            <option value="4">4 - Completely disabled</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Smoking Status</label>
+                                        <select class="form-select" id="smoking-status" name="smoking_status">
+                                            <option value="never">Never Smoker</option>
+                                            <option value="former" selected>Former Smoker</option>
+                                            <option value="current">Current Smoker</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Pack Years</label>
+                                        <input type="range" class="form-range" id="pack-years" name="pack_years" min="0" max="100" value="30" step="5">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0</small>
+                                            <small id="pack-years-value">30</small>
+                                            <small>100+</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
