@@ -1191,108 +1191,95 @@
         // Global variable to store verification data
         let globalVerificationData = null;
         
-        // Function to update the verification tab
+        // Simplified function to update the verification tab
         function updateVerificationDisplay() {
-            const waitingDiv = document.getElementById('verification-waiting');
-            const resultsDiv = document.getElementById('verification-results-data');
-            const statusCard = document.getElementById('verification-status-card');
-            
-            if (!globalVerificationData) {
-                console.log("No verification data available yet");
-                return;
-            }
-            
-            console.log("Updating verification display with data:", globalVerificationData);
-            
-            // Hide waiting message
-            if (waitingDiv) {
-                waitingDiv.style.display = 'none';
-            }
-            
-            if (!resultsDiv) {
-                console.error("Results div not found");
-                return;
-            }
-            
-            // Get verification status
-            const isVerified = globalVerificationData.calculation_verification || false;
-            
-            // Get verification data
-            let verificationData = globalVerificationData.verification_data || {
-                fitness: { valid: false, max_difference: 0.41 },
-                tumor_volume: { valid: true, difference: 0.05 },
-                survival_probability: { valid: false, difference: 0.27 }
-            };
-            
-            // Update card header style
-            if (statusCard) {
-                const cardHeader = statusCard.querySelector('.card-header');
-                if (cardHeader) {
-                    cardHeader.className = isVerified ? 
-                        'card-header bg-success text-white' : 
-                        'card-header bg-warning text-white';
-                
-                    // Update card header text
-                    const headerTitle = cardHeader.querySelector('h5');
-                    if (headerTitle) {
-                        headerTitle.textContent = isVerified ? 
-                            'Verification Successful' : 
-                            'Verification Issues Detected';
+            // Fetch verification data from the server
+            fetch('/get_verification_data')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched verification data:", data);
+                    
+                    // Get UI elements
+                    const waitingDiv = document.getElementById('verification-waiting');
+                    const resultsDiv = document.getElementById('verification-results-data');
+                    const statusCard = document.getElementById('verification-status-card');
+                    const tableBody = document.getElementById('verification-table-body');
+                    const alertDiv = document.getElementById('verification-alert');
+                    
+                    if (!waitingDiv || !resultsDiv || !statusCard || !tableBody || !alertDiv) {
+                        console.error("Required verification elements not found");
+                        return;
                     }
-                }
-            }
-            
-            // Generate HTML for results
-            const html = `
-                <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Calculation Type</th>
-                                <th>Status</th>
-                                <th>Difference</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="${verificationData.fitness && verificationData.fitness.valid ? 'table-success' : 'table-warning'}">
-                                <td>Fitness Calculation</td>
-                                <td>
-                                    <i class="bi ${verificationData.fitness && verificationData.fitness.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
-                                    ${verificationData.fitness && verificationData.fitness.valid ? 'Verified' : 'Discrepancy'}
-                                </td>
-                                <td>${(verificationData.fitness && (verificationData.fitness.max_difference || verificationData.fitness.difference) || 0).toFixed(4)}</td>
-                            </tr>
-                            <tr class="${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'table-success' : 'table-warning'}">
-                                <td>Tumor Volume</td>
-                                <td>
-                                    <i class="bi ${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
-                                    ${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'Verified' : 'Discrepancy'}
-                                </td>
-                                <td>${(verificationData.tumor_volume && verificationData.tumor_volume.difference || 0).toFixed(4)}</td>
-                            </tr>
-                            <tr class="${verificationData.survival_probability && verificationData.survival_probability.valid ? 'table-success' : 'table-warning'}">
-                                <td>Survival Probability</td>
-                                <td>
-                                    <i class="bi ${verificationData.survival_probability && verificationData.survival_probability.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
-                                    ${verificationData.survival_probability && verificationData.survival_probability.valid ? 'Verified' : 'Discrepancy'}
-                                </td>
-                                <td>${(verificationData.survival_probability && verificationData.survival_probability.difference || 0).toFixed(4)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="alert ${isVerified ? 'alert-success' : 'alert-warning'} mt-3">
-                    <i class="bi ${isVerified ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
-                    <strong>${isVerified ? 'All calculations verified!' : 'Verification issues detected!'}</strong><br>
-                    ${isVerified ? 
-                        'All mathematical operations are within acceptable tolerance limits.' : 
-                        'Some calculations exceeded tolerance limits. This may indicate numerical instability in certain parameter ranges.'}
-                </div>
-            `;
-            
-            // Update the results div
-            resultsDiv.innerHTML = html;
+                    
+                    // Hide waiting message, show results
+                    waitingDiv.style.display = 'none';
+                    resultsDiv.style.display = 'block';
+                    
+                    // Get verification status
+                    const isVerified = data.calculation_verification || false;
+                    
+                    // Get verification data
+                    const verificationData = data.verification_data || {};
+                    
+                    // Update card header style
+                    const cardHeader = statusCard.querySelector('.card-header');
+                    if (cardHeader) {
+                        cardHeader.className = isVerified ? 
+                            'card-header bg-success text-white' : 
+                            'card-header bg-warning text-white';
+                    
+                        // Update card header text
+                        const headerTitle = cardHeader.querySelector('h5');
+                        if (headerTitle) {
+                            headerTitle.textContent = isVerified ? 
+                                'Verification Successful' : 
+                                'Verification Issues Detected';
+                        }
+                    }
+                    
+                    // Clear previous table data
+                    tableBody.innerHTML = '';
+                    
+                    // Add rows for each calculation type
+                    const calcTypes = [
+                        { key: 'fitness', name: 'Fitness Calculation' },
+                        { key: 'tumor_volume', name: 'Tumor Volume' },
+                        { key: 'survival_probability', name: 'Survival Probability' }
+                    ];
+                    
+                    calcTypes.forEach(calcType => {
+                        const calcData = verificationData[calcType.key] || {};
+                        const isValid = calcData.valid || false;
+                        const difference = calcData.max_difference || calcData.difference || 0;
+                        
+                        const row = document.createElement('tr');
+                        row.className = isValid ? 'table-success' : 'table-warning';
+                        
+                        row.innerHTML = `
+                            <td>${calcType.name}</td>
+                            <td>
+                                <i class="bi ${isValid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
+                                ${isValid ? 'Verified' : 'Discrepancy'}
+                            </td>
+                            <td>${difference.toFixed(4)}</td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                    
+                    // Update alert message
+                    alertDiv.className = isVerified ? 'alert alert-success mt-3' : 'alert alert-warning mt-3';
+                    alertDiv.innerHTML = `
+                        <i class="bi ${isVerified ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                        <strong>${isVerified ? 'All calculations verified!' : 'Verification issues detected!'}</strong><br>
+                        ${isVerified ? 
+                            'All mathematical operations are within acceptable tolerance limits.' : 
+                            'Some calculations exceeded tolerance limits. This may indicate numerical instability in certain parameter ranges.'}
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching verification data:", error);
+                });
         }
         
         document.addEventListener('DOMContentLoaded', function() {
