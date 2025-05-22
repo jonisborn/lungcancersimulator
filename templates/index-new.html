@@ -1108,28 +1108,13 @@
                                 <h5 class="mb-0">Verification Status</h5>
                             </div>
                             <div class="card-body" id="verification-status-body">
-                                <div class="text-center py-4">
+                                <div id="verification-waiting" class="text-center py-4">
                                     <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
                                     <p class="mt-3">Run a simulation to see verification results.</p>
                                 </div>
                                 
-                                <div id="verification-details" class="d-none">
-                                    <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
-                                    
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th>Calculation Type</th>
-                                                    <th>Status</th>
-                                                    <th>Difference</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="verification-table-body">
-                                                <!-- Will be populated by JavaScript -->
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                <div id="verification-results-data">
+                                    <!-- This will be directly updated with HTML content -->
                                 </div>
                             </div>
                         </div>
