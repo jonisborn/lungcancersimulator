@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lung Cancer Evolution Simulator</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .container-fluid {
+            max-width: 1400px;
+            padding: 20px;
+        }
+        .chart-container {
+            height: 350px;
+            margin-bottom: 20px;
+        }
+        .parameter-card {
+            height: 100%;
+        }
+        .slider-value {
+            font-weight: bold;
+            color: var(--bs-primary);
+        }
+        .nav-tabs .nav-link {
+            color: var(--bs-gray-500);
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: bold;
+        }
+        .protocol-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .protocol-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .protocol-card.selected {
+            border: 2px solid var(--bs-primary);
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+        }
+        .scenario-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .scenario-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .scenario-card.selected {
+            border: 2px solid var(--bs-primary);
+        }
+        .time-unit-toggle .btn.active {
+            box-shadow: none;
+        }
+        .biomarker-badge {
+            display: inline-block;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .tab-pane {
+            padding: 15px 0;
+        }
+        .form-range::-webkit-slider-thumb {
+            background: var(--bs-primary);
+        }
+        .form-range::-moz-range-thumb {
+            background: var(--bs-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <header class="text-center mb-4">
+            <h1 class="display-5">Lung Cancer Evolution Simulator</h1>
+            <p class="lead">Advanced NSCLC/SCLC oncology treatment model</p>
+            <div class="badge bg-info text-white mb-2">For Research and Educational Purposes Only</div>
+        </header>
+
+        <!-- Nav tabs for Simulation, Scenarios, Biomarkers, and Verification -->
+        <ul class="nav nav-tabs mb-4" id="main-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="simulation-tab" data-bs-toggle="tab" data-bs-target="#simulation-pane" type="button" role="tab">
+                    <i class="bi bi-gear-fill"></i> Simulation
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="scenarios-tab" data-bs-toggle="tab" data-bs-target="#scenarios-pane" type="button" role="tab">
+                    <i class="bi bi-clipboard2-pulse"></i> Clinical Scenarios
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="biomarkers-tab" data-bs-toggle="tab" data-bs-target="#biomarkers-pane" type="button" role="tab">
+                    <i class="bi bi-fingerprint"></i> Biomarkers
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="verification-tab" data-bs-toggle="tab" data-bs-target="#verification-pane" type="button" role="tab">
+                    <i class="bi bi-shield-check"></i> Redundancy Check
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Simulation Tab -->
+            <div class="tab-pane fade show active" id="simulation-pane" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Left Column - Input Parameters -->
+                    <div class="col-lg-5">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Simulation Parameters</h4>
+                            </div>
+                            <div class="card-body">
+                                <form id="simulation-form">
+                                    <!-- Disease Characteristics -->
+                                    <h5 class="border-bottom pb-2 mb-3">Disease Characteristics</h5>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="cancer-type" class="form-label">Lung Cancer Type</label>
+                                            <select class="form-select" id="cancer-type">
+                                                <option value="NSCLC" selected>NSCLC</option>
+                                                <option value="SCLC">SCLC</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle"></i> NSCLC (Non-small cell) represents 85% of cases
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="disease-stage" class="form-label">Disease Stage</label>
+                                            <select class="form-select" id="disease-stage">
+                                                <option value="1">Stage I</option>
+                                                <option value="2">Stage II</option>
+                                                <option value="3" selected>Stage III</option>
+                                                <option value="4">Stage IV</option>
+                                            </select>
+                                            <div class="mt-1">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle"></i> Stage significantly impacts treatment approach
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Stage Info Cards -->
+                                    <div class="mb-3">
+                                        <div class="row row-cols-2 g-2">
+                                            <div class="col">
+                                                <div class="card h-100 border-success">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Early-Stage (I-II)</h6>
+                                                        <p class="card-text small">Potentially curable with surgery or SBRT. Consider adjuvant therapy for higher risk.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-warning">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Locally Advanced (III)</h6>
+                                                        <p class="card-text small">Multimodal treatment with chemoradiation. Consider immunotherapy for stage III.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-primary">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">NSCLC Approach</h6>
+                                                        <p class="card-text small">Test for biomarkers (EGFR, ALK, ROS1, PD-L1) to guide therapy selection.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="card h-100 border-danger">
+                                                    <div class="card-body py-2 px-3">
+                                                        <h6 class="card-title">Advanced (IV)</h6>
+                                                        <p class="card-text small">Systemic therapy based on molecular testing. Consider local approaches for oligometastatic disease.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Patient Factors -->
+                                    <h5 class="border-bottom pb-2 mb-3 mt-4">Patient Factors</h5>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="age" class="form-label d-flex justify-content-between">
+                                                <span>Age (years)</span>
+                                                <span id="age-value" class="slider-value">65</span>
+                                            </label>
+                                            <input type="range" class="form-range" id="age" min="30" max="90" value="65" step="1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="smoking-status" class="form-label">Smoking Status</label>
+                                            <select class="form-select" id="smoking-status">
+                                                <option value="never">Never Smoker</option>
+                                                <option value="former">Former Smoker</option>
+                                                <option value="current" selected>Current Smoker</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3" id="pack-years-container">
+                                        <label for="pack-years" class="form-label d-flex justify-content-between">
+                                            <span>Smoking History (Pack-Years)</span>
+                                            <span id="pack-years-value" class="slider-value">30</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="pack-years" min="0" max="100" value="30" step="5">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Light</small>
+                                            <small class="text-muted">Moderate</small>
+                                            <small class="text-muted">Heavy</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Pack-years = packs per day × years smoked (e.g., 1 pack/day for 30 years = 30 pack-years)
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-success">0-10</span> Light
+                                            <span class="badge bg-warning ms-2">11-40</span> Moderate
+                                            <span class="badge bg-danger ms-2">41+</span> Heavy Smoking History
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="performance-status" class="form-label">ECOG Performance Status</label>
+                                        <select class="form-select" id="performance-status">
+                                            <option value="0">0 - Fully active</option>
+                                            <option value="1" selected>1 - Restricted but ambulatory</option>
+                                            <option value="2">2 - Ambulatory but unable to work</option>
+                                            <option value="3">3 - Limited self-care</option>
+                                        </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Performance status is a major factor in treatment selection and prognosis
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-success">0-1</span> Good candidates for aggressive therapy
+                                            <span class="badge bg-warning ms-2">2</span> May require dose adjustments
+                                            <span class="badge bg-danger ms-2">3+</span> Consider palliative approaches
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Initial Cell Populations -->
+                                    <h5 class="border-bottom pb-2 mb-3 mt-4">Tumor Composition</h5>
+                                    
+                                    <div class="mb-3">
+                                        <label for="sensitive-cells" class="form-label d-flex justify-content-between">
+                                            <span>Sensitive Tumor Cells</span>
+                                            <span id="sensitive-value" class="slider-value">100</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="sensitive-cells" min="0" max="500" value="100" step="10">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="resistant-cells" class="form-label d-flex justify-content-between">
+                                            <span>Resistant Clone Cells</span>
+                                            <span id="resistant-value" class="slider-value">10</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="resistant-cells" min="0" max="100" value="10" step="1">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="stem-cells" class="form-label d-flex justify-content-between">
+                                            <span>Cancer Stem-like Cells</span>
+                                            <span id="stem-value" class="slider-value">5</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="stem-cells" min="0" max="50" value="5" step="1">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="immune-cells" class="form-label d-flex justify-content-between">
+                                            <span>CD8+ T-Cells</span>
+                                            <span id="immune-value" class="slider-value">50</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="immune-cells" min="0" max="200" value="50" step="5">
+                                    </div>
+                                    
+                                    <!-- Treatment Parameters -->
+                                    <h5 class="border-bottom pb-2 mb-3 mt-4">Treatment Strategy</h5>
+                                    
+                                    <!-- Treatment Cards -->
+                                    <div class="mb-3">
+                                        <div class="row row-cols-1 g-2">
+                                            <div class="col">
+                                                <div class="alert alert-info py-2">
+                                                    <div class="d-flex">
+                                                        <div class="me-2">
+                                                            <i class="bi bi-info-circle-fill fs-4"></i>
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-1">Treatment Selection Guide</h6>
+                                                            <p class="mb-0 small">Treatment selection is based on cancer type, stage, biomarkers, and patient factors. Each modality has distinct resistance patterns and evolutionary pressures.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="treatment-type" class="form-label">Treatment Type</label>
+                                        <select class="form-select" id="treatment-type">
+                                            <option value="chemotherapy" selected>Chemotherapy</option>
+                                            <option value="targeted">Targeted Therapy</option>
+                                            <option value="immunotherapy">Immunotherapy</option>
+                                            <option value="chemoimmuno">Chemo-Immunotherapy</option>
+                                            <option value="radiation">Radiation Therapy</option>
+                                        </select>
+                                        
+                                        <!-- Treatment Type Info Cards -->
+                                        <div class="mt-2">
+                                            <div class="row row-cols-1 g-2">
+                                                <!-- Chemotherapy Card -->
+                                                <div class="col treatment-info" id="chemotherapy-info">
+                                                    <div class="card border-secondary">
+                                                        <div class="card-header py-1 bg-secondary text-white">
+                                                            <h6 class="card-title mb-0">Chemotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Cytotoxic agents targeting rapidly dividing cells.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Standard of care for most advanced NSCLC without driver mutations</li>
+                                                                <li>Primary therapy for SCLC with high initial response rates</li>
+                                                                <li>Promotes resistant clone selection under treatment pressure</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Targeted Therapy Card -->
+                                                <div class="col treatment-info d-none" id="targeted-info">
+                                                    <div class="card border-info">
+                                                        <div class="card-header py-1 bg-info text-white">
+                                                            <h6 class="card-title mb-0">Targeted Therapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Precision medicines targeting specific molecular alterations.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>First-line for NSCLC with EGFR, ALK, ROS1, BRAF, RET mutations</li>
+                                                                <li>High initial response rates (60-80%)</li>
+                                                                <li>Inevitable resistance through mutation or bypass pathways</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Immunotherapy Card -->
+                                                <div class="col treatment-info d-none" id="immunotherapy-info">
+                                                    <div class="card border-success">
+                                                        <div class="card-header py-1 bg-success text-white">
+                                                            <h6 class="card-title mb-0">Immunotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Immune checkpoint inhibitors enhancing T-cell activity.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>First-line for NSCLC with high PD-L1 expression (≥50%)</li>
+                                                                <li>Durable responses in 20-40% of patients</li>
+                                                                <li>Resistance through immunoediting and T-cell exhaustion</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Chemoimmunotherapy Card -->
+                                                <div class="col treatment-info d-none" id="chemoimmuno-info">
+                                                    <div class="card border-primary">
+                                                        <div class="card-header py-1 bg-primary text-white">
+                                                            <h6 class="card-title mb-0">Chemo-Immunotherapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Combination therapy leveraging synergistic effects.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Standard for NSCLC without driver mutations or PD-L1 < 50%</li>
+                                                                <li>Chemotherapy enhances immunotherapy through tumor antigen release</li>
+                                                                <li>Complex resistance patterns involving both immune escape and drug resistance</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Radiation Card -->
+                                                <div class="col treatment-info d-none" id="radiation-info">
+                                                    <div class="card border-warning">
+                                                        <div class="card-header py-1 bg-warning text-dark">
+                                                            <h6 class="card-title mb-0">Radiation Therapy</h6>
+                                                        </div>
+                                                        <div class="card-body py-2">
+                                                            <p class="card-text small mb-1">Localized treatment using ionizing radiation.</p>
+                                                            <ul class="small mb-0 ps-3">
+                                                                <li>Curative for early-stage NSCLC (SBRT) when surgery contraindicated</li>
+                                                                <li>Combined with chemotherapy for stage III NSCLC</li>
+                                                                <li>May induce abscopal effects through immune stimulation</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3" id="treatment-options-container">
+                                        <label for="treatment-option" class="form-label">Treatment Regimen</label>
+                                        <select class="form-select" id="treatment-option">
+                                            <!-- Chemotherapy options -->
+                                            <option value="carboplatin-pemetrexed" data-type="chemotherapy" selected>Carboplatin + Pemetrexed</option>
+                                            <option value="cisplatin-etoposide" data-type="chemotherapy">Cisplatin + Etoposide</option>
+                                            <option value="carboplatin-paclitaxel" data-type="chemotherapy">Carboplatin + Paclitaxel</option>
+                                            <option value="carboplatin-gemcitabine" data-type="chemotherapy">Carboplatin + Gemcitabine</option>
+                                            
+                                            <!-- Targeted options -->
+                                            <option value="osimertinib" data-type="targeted">Osimertinib (EGFR)</option>
+                                            <option value="alectinib" data-type="targeted">Alectinib (ALK)</option>
+                                            <option value="crizotinib" data-type="targeted">Crizotinib (ROS1)</option>
+                                            <option value="selpercatinib" data-type="targeted">Selpercatinib (RET)</option>
+                                            <option value="dabrafenib-trametinib" data-type="targeted">Dabrafenib + Trametinib (BRAF)</option>
+                                            
+                                            <!-- Immunotherapy options -->
+                                            <option value="pembrolizumab" data-type="immunotherapy">Pembrolizumab (PD-1)</option>
+                                            <option value="nivolumab" data-type="immunotherapy">Nivolumab (PD-1)</option>
+                                            <option value="atezolizumab" data-type="immunotherapy">Atezolizumab (PD-L1)</option>
+                                            <option value="durvalumab" data-type="immunotherapy">Durvalumab (PD-L1)</option>
+                                            
+                                            <!-- Combination options -->
+                                            <option value="carbo-pem-pembro" data-type="chemoimmuno">Carboplatin + Pemetrexed + Pembrolizumab</option>
+                                            <option value="carbo-pacli-pembro" data-type="chemoimmuno">Carboplatin + Paclitaxel + Pembrolizumab</option>
+                                            <option value="chemo-durvalumab" data-type="chemoimmuno">Chemotherapy + Durvalumab</option>
+                                            
+                                            <!-- Radiation options -->
+                                            <option value="sbrt" data-type="radiation">SBRT (Stereotactic Body Radiation)</option>
+                                            <option value="imrt" data-type="radiation">IMRT (Intensity Modulated RT)</option>
+                                            <option value="chemoradiation" data-type="radiation">Concurrent Chemoradiation</option>
+                                        </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Specific regimens available depend on the selected treatment type
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="treatment-protocol" class="form-label">Dosing Protocol</label>
+                                        <select class="form-select" id="treatment-protocol">
+                                            <option value="CONTINUOUS">Continuous (Maintenance)</option>
+                                            <option value="PULSED" selected>Pulsed (Conventional)</option>
+                                            <option value="METRONOMIC">Metronomic (Low-dose)</option>
+                                            <option value="ADAPTIVE">Adaptive (Response-based)</option>
+                                        </select>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> The dosing strategy can significantly impact tumor evolution and resistance
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Treatment Protocol Cards -->
+                                        <div class="mt-2">
+                                            <div class="row row-cols-2 g-2">
+                                                <div class="col">
+                                                    <div class="card h-100 border-primary">
+                                                        <div class="card-header py-1 px-3 bg-primary text-white">
+                                                            <h6 class="card-title mb-0">Continuous</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Daily uninterrupted dosing. Good for targeted therapies, maintains constant drug pressure but may accelerate resistance.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-success">
+                                                        <div class="card-header py-1 px-3 bg-success text-white">
+                                                            <h6 class="card-title mb-0">Pulsed</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Standard intermittent dosing with rest periods. Allows recovery from side effects, balances efficacy and toxicity.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-info">
+                                                        <div class="card-header py-1 px-3 bg-info text-white">
+                                                            <h6 class="card-title mb-0">Metronomic</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Frequent low doses without extended breaks. Targets tumor vasculature, reduces resistance, minimal side effects.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="card h-100 border-warning">
+                                                        <div class="card-header py-1 px-3 bg-warning text-dark">
+                                                            <h6 class="card-title mb-0">Adaptive</h6>
+                                                        </div>
+                                                        <div class="card-body py-2 px-3">
+                                                            <p class="card-text small">Response-guided dosing. Titrates treatment based on tumor burden, exploits competition between sensitive/resistant cells.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="drug-strength" class="form-label d-flex justify-content-between">
+                                            <span>Drug Potency</span>
+                                            <span id="drug-strength-value" class="slider-value">0.80</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="drug-strength" min="0" max="1" value="0.8" step="0.05">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Low</small>
+                                            <small class="text-muted">Medium</small>
+                                            <small class="text-muted">High</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Represents relative drug efficacy (e.g., standard dose vs. reduced dose)
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="drug-decay" class="form-label d-flex justify-content-between">
+                                            <span>Pharmacokinetic Clearance</span>
+                                            <span id="drug-decay-value" class="slider-value">0.10</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="drug-decay" min="0.05" max="0.3" value="0.1" step="0.01">
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">Slow</small>
+                                            <small class="text-muted">Normal</small>
+                                            <small class="text-muted">Rapid</small>
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Rate at which drug is cleared from the body (affects duration of action)
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="dose-frequency" class="form-label d-flex justify-content-between">
+                                            <span>Dose Frequency (days)</span>
+                                            <span id="dose-frequency-value" class="slider-value">7</span>
+                                        </label>
+                                        <input type="range" class="form-range" id="dose-frequency" min="1" max="21" value="7" step="1">
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Time between doses (daily = 1, weekly = 7, etc.)
+                                            </small>
+                                        </div>
+                                        <div class="mt-1 small">
+                                            <span class="badge bg-primary">1-3 days</span> Dense scheduling
+                                            <span class="badge bg-info ms-2">7 days</span> Weekly
+                                            <span class="badge bg-secondary ms-2">14-21 days</span> Bi-weekly/Monthly
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="d-grid gap-2 mt-4">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="run-simulation-btn">
+                                            <i class="bi bi-play-circle"></i> Run Simulation
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="reset-params-btn">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Reset Parameters
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Results and Charts -->
+                    <div class="col-lg-7">
+                        <!-- Spinner for loading -->
+                        <div id="spinner-container" class="text-center my-5 d-none">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="lead mt-3">Running simulation...</p>
+                        </div>
+                        
+                        <!-- Results Container -->
+                        <div id="results-container" class="d-none">
+                            <!-- Results will be filled in dynamically -->
+                        </div>
+                        
+                        <!-- Charts -->
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0">Tumor Cell Populations</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="population-chart"></canvas>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="log-scale-toggle">
+                                                <label class="form-check-label" for="log-scale-toggle">Logarithmic Scale</label>
+                                            </div>
+                                            
+                                            <div class="btn-group btn-group-sm time-scale-btns">
+                                                <button type="button" class="btn btn-sm btn-primary active" onclick="setTimeScale('days')">Days</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setTimeScale('weeks')">Weeks</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="setTimeScale('months')">Months</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <h4 class="mb-0">Drug Concentration</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="drug-level-chart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Clinical Scenarios Tab -->
+            <div class="tab-pane fade" id="scenarios-pane" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Select a clinical scenario to automatically configure the simulator with appropriate parameters for different lung cancer cases.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    <!-- Stage I NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="stage1-nsclc">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Stage I NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage non-small cell lung cancer suitable for curative-intent treatment.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary biomarker-badge">T1N0M0</span>
+                                    <span class="badge bg-secondary biomarker-badge">PD-L1 5%</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IA2 (2.3cm nodule)</li>
+                                    <li class="list-group-item bg-transparent">Excellent surgical candidate</li>
+                                    <li class="list-group-item bg-transparent">Low risk of recurrence</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-success load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stage II NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="stage2-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Stage II NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Localized non-small cell lung cancer with minimal nodal involvement.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-primary biomarker-badge">T2N1M0</span>
+                                    <span class="badge bg-secondary biomarker-badge">KRAS+</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IIB</li>
+                                    <li class="list-group-item bg-transparent">Surgical resection with adjuvant therapy</li>
+                                    <li class="list-group-item bg-transparent">Moderate recurrence risk</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- EGFR+ Early NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="egfr-early-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">EGFR+ Early NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage EGFR-mutated NSCLC suitable for surgical resection.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">EGFR+</span>
+                                    <span class="badge bg-secondary biomarker-badge">TP53+</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: II (T2bN0M0)</li>
+                                    <li class="list-group-item bg-transparent">Surgery with adjuvant targeted therapy</li>
+                                    <li class="list-group-item bg-transparent">Lower recurrence risk with targeted therapy</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- EGFR+ Advanced NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="egfr-nsclc">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">EGFR+ Advanced NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Advanced EGFR-mutated NSCLC with targetable driver mutation.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">EGFR+</span>
+                                    <span class="badge bg-secondary biomarker-badge">TP53+</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IIIB-IV</li>
+                                    <li class="list-group-item bg-transparent">High initial response</li>
+                                    <li class="list-group-item bg-transparent">Early emergence of T790M resistance</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-primary load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ALK+ NSCLC Early Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="alk-early-nsclc">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">ALK+ Early NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Early-stage ALK-rearranged non-small cell lung cancer, surgical candidate.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">ALK+</span>
+                                    <span class="badge bg-secondary biomarker-badge">KRAS-</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: II (T2N0M0)</li>
+                                    <li class="list-group-item bg-transparent">Surgical resection followed by targeted therapy</li>
+                                    <li class="list-group-item bg-transparent">Excellent disease control</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-info load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ALK+ NSCLC Advanced Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="alk-nsclc">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">ALK+ Advanced NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Advanced ALK-rearranged non-small cell lung cancer, responsive to targeted therapies.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">ALK+</span>
+                                    <span class="badge bg-secondary biomarker-badge">KRAS-</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: IV with CNS metastases</li>
+                                    <li class="list-group-item bg-transparent">Dramatic initial tumor response</li>
+                                    <li class="list-group-item bg-transparent">CNS-penetrant therapy required</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-primary load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PD-L1 High NSCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="pdl1-nsclc">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">PD-L1 High NSCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">High PD-L1 expression NSCLC with no driver mutations, candidate for immunotherapy.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">PD-L1 ≥50%</span>
+                                    <span class="badge bg-secondary biomarker-badge">TMB-High</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: III-IV</li>
+                                    <li class="list-group-item bg-transparent">Immune checkpoint inhibitor response</li>
+                                    <li class="list-group-item bg-transparent">High tumor mutation burden</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-primary load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Extensive-Stage SCLC Scenario -->
+                    <div class="col">
+                        <div class="card scenario-card h-100" data-scenario="es-sclc">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Extensive-Stage SCLC</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">Rapidly progressive small cell lung cancer with high mitotic rate.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-info biomarker-badge">ASCL1+</span>
+                                    <span class="badge bg-secondary biomarker-badge">RB1-</span>
+                                </div>
+                                <hr>
+                                <ul class="list-group list-group-flush small">
+                                    <li class="list-group-item bg-transparent">Stage: Extensive stage</li>
+                                    <li class="list-group-item bg-transparent">High initial chemoresponsiveness</li>
+                                    <li class="list-group-item bg-transparent">Early resistance pattern</li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-end">
+                                <button class="btn btn-sm btn-outline-primary load-scenario-btn">
+                                    <i class="bi bi-arrow-right-circle"></i> Load Scenario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Biomarkers Tab -->
+            <div class="tab-pane fade" id="biomarkers-pane" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Key molecular and immunologic biomarkers in lung cancer with treatment implications.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">NSCLC Targetable Mutations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Biomarker</th>
+                                                <th>Frequency</th>
+                                                <th>Treatment Approach</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-primary">EGFR</span></td>
+                                                <td>15-20% Western<br>40-60% Asian</td>
+                                                <td>EGFR TKIs (osimertinib)</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">ALK</span></td>
+                                                <td>3-7%</td>
+                                                <td>ALK inhibitors (alectinib)</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">ROS1</span></td>
+                                                <td>1-2%</td>
+                                                <td>ROS1 inhibitors (entrectinib)</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">BRAF V600E</span></td>
+                                                <td>1-3%</td>
+                                                <td>BRAF/MEK inhibitors</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-primary">NTRK</span></td>
+                                                <td><1%</td>
+                                                <td>TRK inhibitors (larotrectinib)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Immunotherapy Biomarkers</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Biomarker</th>
+                                                <th>Significance</th>
+                                                <th>Treatment Impact</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-info">PD-L1 ≥50%</span></td>
+                                                <td>High expression</td>
+                                                <td>ICI monotherapy first-line</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-info">PD-L1 1-49%</span></td>
+                                                <td>Intermediate</td>
+                                                <td>Chemoimmunotherapy</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-info">TMB High</span></td>
+                                                <td>≥10 mut/Mb</td>
+                                                <td>Better ICI response</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-info">MSI-H/dMMR</span></td>
+                                                <td>Rare in NSCLC</td>
+                                                <td>Pembrolizumab approval</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">SCLC Molecular Subtypes</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subtype</th>
+                                                <th>Key Features</th>
+                                                <th>Therapy Implications</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">ASCL1 (SCLC-A)</span></td>
+                                                <td>Classic SCLC</td>
+                                                <td>Chemosensitive</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">NEUROD1 (SCLC-N)</span></td>
+                                                <td>Neural features</td>
+                                                <td>Variable response</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">POU2F3 (SCLC-P)</span></td>
+                                                <td>Tuft cell-like</td>
+                                                <td>PARP inhibitor sensitive</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-secondary">YAP1 (SCLC-Y)</span></td>
+                                                <td>Inflammatory</td>
+                                                <td>Immunotherapy responsive</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Emerging Biomarkers</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Biomarker</th>
+                                                <th>Type</th>
+                                                <th>Clinical Application</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="badge bg-success">ctDNA</span></td>
+                                                <td>Liquid biopsy</td>
+                                                <td>MRD detection, resistance</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">Tumor Immune Score</span></td>
+                                                <td>Microenvironment</td>
+                                                <td>Immunotherapy selection</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">HLA Status</span></td>
+                                                <td>Immune function</td>
+                                                <td>ICI response prediction</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="badge bg-success">Microbiome</span></td>
+                                                <td>Host factors</td>
+                                                <td>Treatment response</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Redundancy Check Tab -->
+            <div class="tab-pane fade" id="verification-pane" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i><strong>Mathematical Verification System</strong>: Ensuring clinical reliability through redundant calculation methods.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Verification System Architecture</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-3 text-muted">How Redundancy Checks Work</h6>
+                                <p>Critical calculations in our cancer simulation are performed using <strong>two independent mathematical methods</strong>:</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">
+                                        <strong>Primary Method</strong>: Evolutionary game theory with differential equations
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Redundant Method</strong>: Alternative analytical approach with empirical models
+                                    </li>
+                                </ul>
+                                <p>Results from both methods are compared to ensure consistency and reliability. If the results disagree beyond acceptable tolerance, the system flags potential calculation errors.</p>
+                                
+                                <div class="alert alert-secondary mt-3">
+                                    <p class="mb-0"><strong>Tolerance Thresholds:</strong></p>
+                                    <ul class="mb-0">
+                                        <li>Fitness Calculations: 1% or 0.01 absolute difference</li>
+                                        <li>Tumor Volume: 1% or 0.1 cubic mm</li>
+                                        <li>Survival Probability: 5% absolute maximum variance</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100" id="verification-status-card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Verification Status</h5>
+                            </div>
+                            <div class="card-body" id="verification-status-body">
+                                <div id="verification-content">
+                                    <div id="verification-waiting" class="text-center py-4">
+                                        <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
+                                        <p class="mt-3">Run a simulation to see verification results.</p>
+                                    </div>
+                                    
+                                    <div id="verification-results-data" style="display: none;">
+                                        <!-- This will be updated with verification results -->
+                                        <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Calculation Type</th>
+                                                        <th>Status</th>
+                                                        <th>Difference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="verification-table-body">
+                                                    <!-- Will be populated with results -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div id="verification-alert" class="alert mt-3">
+                                            <!-- Alert content will be added here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Importance of Verification in Clinical Modeling</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Mathematical redundancy in clinical simulations serves multiple critical purposes:</p>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-success">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-shield-check me-2"></i>Reliability</h6>
+                                                <p class="card-text small">Ensures predictions are mathematically sound and free from computational artifacts that could mislead clinical interpretations.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-primary">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-graph-up me-2"></i>Accuracy</h6>
+                                                <p class="card-text small">Confirms that complex evolutionary dynamics are being modeled correctly through independent calculation pathways.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-warning">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-exclamation-triangle me-2"></i>Safety</h6>
+                                                <p class="card-text small">Prevents erroneous treatment predictions by flagging inconsistencies before they affect clinical interpretation.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Tab switching and verification handling -->
+    <script>
+        // Global variable to store verification data
+        let globalVerificationData = null;
+        
+        // Simplified function to update the verification tab
+        function updateVerificationDisplay() {
+            // Fetch verification data from the server
+            fetch('/get_verification_data')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched verification data:", data);
+                    
+                    // Get UI elements
+                    const waitingDiv = document.getElementById('verification-waiting');
+                    const resultsDiv = document.getElementById('verification-results-data');
+                    const statusCard = document.getElementById('verification-status-card');
+                    const tableBody = document.getElementById('verification-table-body');
+                    const alertDiv = document.getElementById('verification-alert');
+                    
+                    if (!waitingDiv || !resultsDiv || !statusCard || !tableBody || !alertDiv) {
+                        console.error("Required verification elements not found");
+                        return;
+                    }
+                    
+                    // Hide waiting message, show results
+                    waitingDiv.style.display = 'none';
+                    resultsDiv.style.display = 'block';
+                    
+                    // Get verification status
+                    const isVerified = data.calculation_verification || false;
+                    
+                    // Get verification data
+                    const verificationData = data.verification_data || {};
+                    
+                    // Update card header style
+                    const cardHeader = statusCard.querySelector('.card-header');
+                    if (cardHeader) {
+                        cardHeader.className = isVerified ? 
+                            'card-header bg-success text-white' : 
+                            'card-header bg-warning text-white';
+                    
+                        // Update card header text
+                        const headerTitle = cardHeader.querySelector('h5');
+                        if (headerTitle) {
+                            headerTitle.textContent = isVerified ? 
+                                'Verification Successful' : 
+                                'Verification Issues Detected';
+                        }
+                    }
+                    
+                    // Clear previous table data
+                    tableBody.innerHTML = '';
+                    
+                    // Add rows for each calculation type
+                    const calcTypes = [
+                        { key: 'fitness', name: 'Fitness Calculation' },
+                        { key: 'tumor_volume', name: 'Tumor Volume' },
+                        { key: 'survival_probability', name: 'Survival Probability' }
+                    ];
+                    
+                    calcTypes.forEach(calcType => {
+                        const calcData = verificationData[calcType.key] || {};
+                        const isValid = calcData.valid || false;
+                        const difference = calcData.max_difference || calcData.difference || 0;
+                        
+                        const row = document.createElement('tr');
+                        row.className = isValid ? 'table-success' : 'table-warning';
+                        
+                        row.innerHTML = `
+                            <td>${calcType.name}</td>
+                            <td>
+                                <i class="bi ${isValid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
+                                ${isValid ? 'Verified' : 'Discrepancy'}
+                            </td>
+                            <td>${difference.toFixed(4)}</td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                    
+                    // Update alert message
+                    alertDiv.className = isVerified ? 'alert alert-success mt-3' : 'alert alert-warning mt-3';
+                    alertDiv.innerHTML = `
+                        <i class="bi ${isVerified ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                        <strong>${isVerified ? 'All calculations verified!' : 'Verification issues detected!'}</strong><br>
+                        ${isVerified ? 
+                            'All mathematical operations are within acceptable tolerance limits.' : 
+                            'Some calculations exceeded tolerance limits. This may indicate numerical instability in certain parameter ranges.'}
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching verification data:", error);
+                });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Listen for verification tab clicks
+            document.getElementById('verification-tab').addEventListener('click', function() {
+                console.log("Verification tab clicked, updating display");
+                updateVerificationDisplay();
+            });
+            
+            // Store a reference to the original fetch function
+            const originalFetch = window.fetch;
+            
+            // Override the fetch function to intercept simulation results
+            window.fetch = function() {
+                // Call the original fetch and get its promise
+                const fetchPromise = originalFetch.apply(this, arguments);
+                
+                // If this is a call to the simulation endpoint
+                if (arguments[0] === '/simulate') {
+                    // Handle the response
+                    fetchPromise.then(response => {
+                        if (response.ok) {
+                            // Clone the response so we can read it twice
+                            const clonedResponse = response.clone();
+                            
+                            // Read the JSON
+                            clonedResponse.json().then(data => {
+                                // Store verification data globally
+                                if (data && data.clinical_summary) {
+                                    console.log("Intercepted verification data:", data.clinical_summary);
+                                    globalVerificationData = data.clinical_summary;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Return the original promise
+                return fetchPromise;
+            };
+        });
+    </script>
+    <script>
+        // Function to set up time unit buttons
+        function setupTimeUnitButtons() {
+            const dayButton = document.getElementById('dayButton');
+            const weekButton = document.getElementById('weekButton');
+            const monthButton = document.getElementById('monthButton');
+            
+            if (!dayButton || !weekButton || !monthButton) {
+                console.warn("Time unit buttons not found");
+                return;
+            }
+            
+            // Set up event listeners for time scale buttons
+            dayButton.addEventListener('click', function() {
+                window.timeScale = 1;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.add('active');
+                weekButton.classList.remove('active');
+                monthButton.classList.remove('active');
+            });
+            
+            weekButton.addEventListener('click', function() {
+                window.timeScale = 7;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.remove('active');
+                weekButton.classList.add('active');
+                monthButton.classList.remove('active');
+            });
+            
+            monthButton.addEventListener('click', function() {
+                window.timeScale = 30;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.remove('active');
+                weekButton.classList.remove('active');
+                monthButton.classList.add('active');
+            });
+        }
+        
+        // Function to update chart time scales
+        function updateChartTimeScales() {
+            // Update each chart based on the selected time scale
+            if (window.populationChart) {
+                updateChartLabels(window.populationChart);
+            }
+            
+            if (window.drugLevelChart) {
+                updateChartLabels(window.drugLevelChart);
+            }
+            
+            if (window.survivalChart) {
+                updateChartLabels(window.survivalChart);
+            }
+            
+            if (window.tumorVolumeChart) {
+                updateChartLabels(window.tumorVolumeChart);
+            }
+        }
+        
+        // Update a chart's x-axis labels based on the current time scale
+        function updateChartLabels(chart) {
+            if (!chart || !chart.data || !chart.data.labels) return;
+            
+            const scale = window.timeScale || 1;
+            const originalLabels = chart.originalLabels || [...chart.data.labels];
+            chart.originalLabels = originalLabels;
+            
+            const newLabels = originalLabels.map(label => {
+                const day = parseInt(label);
+                if (isNaN(day)) return label;
+                
+                if (scale === 1) {
+                    return `Day ${day}`;
+                } else if (scale === 7) {
+                    return `Week ${Math.floor(day / 7) + (day % 7 === 0 ? 0 : 1)}`;
+                } else if (scale === 30) {
+                    return `Month ${Math.floor(day / 30) + (day % 30 === 0 ? 0 : 1)}`;
+                }
+                return label;
+            });
+            
+            chart.data.labels = newLabels;
+            chart.update();
+        }
+        
+        // Call the setup function when the document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTimeUnitButtons();
+        });
+        
+        // Global chart objects
+        let populationChart = null;
+        let drugLevelChart = null;
+        
+        // Time scale conversion function
+        function setTimeScale(scale) {
+            console.log("Changing time scale to:", scale);
+            
+            // Make sure charts exist
+            if (!populationChart || !drugLevelChart) {
+                console.warn("Charts not initialized yet");
+                return;
+            }
+            
+            // Update button styles
+            document.querySelectorAll('.time-scale-btns button').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Find the clicked button and update its style
+            document.querySelector(`.time-scale-btns button:nth-child(${scale === 'days' ? 1 : scale === 'weeks' ? 2 : 3})`).classList.add('btn-primary');
+            document.querySelector(`.time-scale-btns button:nth-child(${scale === 'days' ? 1 : scale === 'weeks' ? 2 : 3})`).classList.remove('btn-outline-primary');
+            
+            // Create new time labels based on scale
+            const timePoints = Array.from({length: 100}, (_, i) => i);
+            let newLabels = timePoints;
+            let xAxisTitle = 'Time (days)';
+            
+            if (scale === 'weeks') {
+                newLabels = timePoints.map(day => (day / 7).toFixed(1));
+                xAxisTitle = 'Time (weeks)';
+            } else if (scale === 'months') {
+                newLabels = timePoints.map(day => (day / 30).toFixed(1));
+                xAxisTitle = 'Time (months)';
+            }
+            
+            // Update population chart
+            populationChart.data.labels = newLabels;
+            populationChart.options.scales.x.title.text = xAxisTitle;
+            populationChart.update();
+            
+            // Update drug level chart
+            drugLevelChart.data.labels = newLabels;
+            drugLevelChart.options.scales.x.title.text = xAxisTitle;
+            drugLevelChart.update();
+            
+            console.log("Time scale updated to:", scale);
+        }
+        
+        // Initialize when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Initializing lung cancer simulator...");
+            
+            // Initialize charts
+            initializeCharts();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Setup sliders
+            setupSliderListeners();
+            
+            // Setup clinical scenarios
+            setupClinicalScenarios();
+            
+            // Setup time unit toggles
+            setupTimeUnitButtons();
+            
+            // Setup treatment type filtering
+            const treatmentTypeSelect = document.getElementById('treatment-type');
+            if (treatmentTypeSelect) {
+                // Filter options on page load
+                filterTreatmentOptions();
+                
+                // Add change event listener
+                treatmentTypeSelect.addEventListener('change', filterTreatmentOptions);
+            }
+            
+            // Initialize tooltips
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+            
+            // Define time unit conversion function globally
+            window.convertTimeUnits = function(unit) {
+                console.log("Direct time unit conversion to:", unit);
+                
+                if (!populationChart || !drugLevelChart) {
+                    console.warn("Charts not available yet");
+                    return;
+                }
+                
+                // Update button active states
+                document.querySelectorAll('#time-unit-buttons button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById(`btn-${unit}`).classList.add('active');
+                
+                // Prepare labels based on selected unit
+                let timePoints = Array.from({length: 100}, (_, i) => i);
+                let newLabels = timePoints;
+                let xAxisLabel = 'Time (days)';
+                
+                if (unit === 'weeks') {
+                    xAxisLabel = 'Time (weeks)';
+                    newLabels = timePoints.map(day => (day / 7).toFixed(1));
+                } else if (unit === 'months') {
+                    xAxisLabel = 'Time (months)';
+                    newLabels = timePoints.map(day => (day / 30).toFixed(1));
+                }
+                
+                // Update population chart
+                populationChart.data.labels = newLabels;
+                populationChart.options.scales.x.title.text = xAxisLabel;
+                populationChart.update();
+                
+                // Update drug level chart
+                drugLevelChart.data.labels = newLabels;
+                drugLevelChart.options.scales.x.title.text = xAxisLabel;
+                drugLevelChart.update();
+                
+                console.log("Time unit conversion complete:", unit);
+            };
+        });
+        
+        /**
+         * Set up all user interface event listeners
+         */
+        function setupEventListeners() {
+            // Run simulation button
+            const runButton = document.getElementById('run-simulation-btn');
+            if (runButton) {
+                runButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    runSimulation();
+                });
+            }
+            
+            // Form submission
+            const form = document.getElementById('simulation-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    runSimulation();
+                });
+            }
+            
+            // Reset parameters button
+            const resetButton = document.getElementById('reset-params-btn');
+            if (resetButton) {
+                resetButton.addEventListener('click', resetParameters);
+            }
+            
+            // Smoking status change
+            const smokingStatus = document.getElementById('smoking-status');
+            if (smokingStatus) {
+                smokingStatus.addEventListener('change', function() {
+                    const packYearsContainer = document.getElementById('pack-years-container');
+                    if (this.value === 'never') {
+                        packYearsContainer.classList.add('d-none');
+                        document.getElementById('pack-years').value = 0;
+                        document.getElementById('pack-years-value').textContent = '0';
+                    } else {
+                        packYearsContainer.classList.remove('d-none');
+                    }
+                });
+            }
+            
+            // Log scale toggle
+            const logScaleToggle = document.getElementById('log-scale-toggle');
+            if (logScaleToggle) {
+                logScaleToggle.addEventListener('change', function() {
+                    toggleLogScale();
+                });
+            }
+            
+            // Time unit toggle
+            const timeUnitButtons = document.querySelectorAll('.time-unit-toggle input');
+            timeUnitButtons.forEach(button => {
+                button.addEventListener('change', function() {
+                    const unit = this.id.replace('time-', '');
+                    console.log("Time unit changed to:", unit);
+                    updateTimeLabels(unit);
+                });
+            });
+            
+            // Patient age slider
+            setupSlider('age', 'age-value');
+            
+            // Pack years slider
+            setupSlider('pack-years', 'pack-years-value');
+        }
+        
+        /**
+         * Update time axis labels based on selected time unit
+         */
+        function updateTimeLabels(unit) {
+            console.log("Updating time labels to:", unit);
+            if (!populationChart || !drugLevelChart) {
+                console.warn("Charts not initialized yet");
+                return;
+            }
+            
+            let xAxisText = 'Time (days)';
+            let xAxisLabels = Array.from({length: 100}, (_, i) => i);
+            
+            if (unit === 'weeks') {
+                xAxisText = 'Time (weeks)';
+                xAxisLabels = Array.from({length: 100}, (_, i) => (i / 7).toFixed(1));
+            } else if (unit === 'months') {
+                xAxisText = 'Time (months)';
+                xAxisLabels = Array.from({length: 100}, (_, i) => (i / 30).toFixed(1));
+            }
+            
+            // Store the current unit for future reference
+            window.currentTimeUnit = unit;
+            
+            // Update population chart
+            populationChart.options.scales.x.title.text = xAxisText;
+            populationChart.data.labels = xAxisLabels;
+            
+            // Force a chart redraw by updating
+            populationChart.update('none'); // Disable animation for instant update
+            
+            // Update drug level chart
+            drugLevelChart.options.scales.x.title.text = xAxisText;
+            drugLevelChart.data.labels = xAxisLabels;
+            
+            // Force a chart redraw
+            drugLevelChart.update('none'); // Disable animation for instant update
+            
+            // Update any time-based values in clinical metrics displays
+            updateClinicalTimeScales(unit);
+            
+            console.log("Time labels updated successfully");
+        }
+        
+        /**
+         * Update any clinical metrics that display time-based values
+         */
+        function updateClinicalTimeScales(unit) {
+            // Update any displayed time values in the clinical metrics
+            const timeValueElements = document.querySelectorAll('.time-value');
+            
+            timeValueElements.forEach(el => {
+                const daysValue = parseInt(el.getAttribute('data-days') || '0');
+                let displayValue = daysValue;
+                let unitLabel = ' days';
+                
+                if (unit === 'weeks') {
+                    displayValue = (daysValue / 7).toFixed(1);
+                    unitLabel = ' weeks';
+                } else if (unit === 'months') {
+                    displayValue = (daysValue / 30).toFixed(1);
+                    unitLabel = ' months';
+                }
+                
+                el.textContent = displayValue + unitLabel;
+            });
+        }
+        
+        /**
+         * Setup clinical scenarios cards
+         */
+        function setupClinicalScenarios() {
+            const scenarioCards = document.querySelectorAll('.scenario-card');
+            
+            scenarioCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    scenarioCards.forEach(c => c.classList.remove('selected'));
+                    
+                    // Add selected class to this card
+                    this.classList.add('selected');
+                    
+                    // Load the scenario
+                    const scenarioId = this.getAttribute('data-scenario');
+                    loadClinicalScenario(scenarioId);
+                    
+                    // Switch to simulation tab
+                    document.getElementById('simulation-tab').click();
+                });
+                
+                // Add click handler to buttons inside cards
+                const loadButton = card.querySelector('.load-scenario-btn');
+                if (loadButton) {
+                    loadButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        card.click();
+                    });
+                }
+            });
+        }
+        
+        /**
+         * Load a clinical scenario's parameters
+         */
+        function loadClinicalScenario(scenarioId) {
+            // Define scenario presets
+            const scenarios = {
+                'stage1-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '1',
+                    age: 62,
+                    smokingStatus: 'former',
+                    packYears: 20,
+                    performanceStatus: '0',
+                    sensitiveCells: 50,
+                    resistantCells: 2,
+                    stemCells: 1,
+                    immuneCells: 120,
+                    treatmentType: 'radiation',
+                    treatmentOption: 'sbrt',
+                    protocol: 'PULSED',
+                    drugStrength: 0.95,
+                    drugDecay: 0.1,
+                    doseFrequency: 1
+                },
+                'stage2-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 58,
+                    smokingStatus: 'former',
+                    packYears: 15,
+                    performanceStatus: '0',
+                    sensitiveCells: 80,
+                    resistantCells: 5,
+                    stemCells: 2,
+                    immuneCells: 90,
+                    treatmentType: 'chemotherapy',
+                    treatmentOption: 'carboplatin-paclitaxel',
+                    protocol: 'PULSED',
+                    drugStrength: 0.9,
+                    drugDecay: 0.15,
+                    doseFrequency: 21
+                },
+                'alk-early-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 45,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '0',
+                    sensitiveCells: 75,
+                    resistantCells: 3,
+                    stemCells: 2,
+                    immuneCells: 100,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'alectinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.9,
+                    drugDecay: 0.1,
+                    doseFrequency: 1
+                },
+                'egfr-early-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '2',
+                    age: 60,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '0',
+                    sensitiveCells: 65,
+                    resistantCells: 4,
+                    stemCells: 2,
+                    immuneCells: 90,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'osimertinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.85,
+                    drugDecay: 0.15,
+                    doseFrequency: 1
+                },
+                'egfr-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '4',
+                    age: 65,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '1',
+                    sensitiveCells: 200,
+                    resistantCells: 5,
+                    stemCells: 10,
+                    immuneCells: 30,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'osimertinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.9,
+                    drugDecay: 0.15,
+                    doseFrequency: 1
+                },
+                'alk-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '4',
+                    age: 55,
+                    smokingStatus: 'never',
+                    packYears: 0,
+                    performanceStatus: '0',
+                    sensitiveCells: 180,
+                    resistantCells: 3,
+                    stemCells: 8,
+                    immuneCells: 40,
+                    treatmentType: 'targeted',
+                    treatmentOption: 'alectinib',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.95,
+                    drugDecay: 0.1,
+                    doseFrequency: 1
+                },
+                'pdl1-nsclc': {
+                    cancerType: 'NSCLC',
+                    diseaseStage: '3',
+                    age: 70,
+                    smokingStatus: 'former',
+                    packYears: 45,
+                    performanceStatus: '1',
+                    sensitiveCells: 150,
+                    resistantCells: 20,
+                    stemCells: 5,
+                    immuneCells: 80,
+                    treatmentType: 'immunotherapy',
+                    treatmentOption: 'pembrolizumab',
+                    protocol: 'CONTINUOUS',
+                    drugStrength: 0.7,
+                    drugDecay: 0.05,
+                    doseFrequency: 14
+                },
+                'es-sclc': {
+                    cancerType: 'SCLC',
+                    diseaseStage: '4',
+                    age: 68,
+                    smokingStatus: 'current',
+                    packYears: 60,
+                    performanceStatus: '2',
+                    sensitiveCells: 300,
+                    resistantCells: 30,
+                    stemCells: 15,
+                    immuneCells: 25,
+                    treatmentType: 'chemoimmuno',
+                    treatmentOption: 'chemo-durvalumab',
+                    protocol: 'PULSED',
+                    drugStrength: 0.85,
+                    drugDecay: 0.2,
+                    doseFrequency: 3
+                }
+            };
+            
+            // Get the selected scenario
+            const scenario = scenarios[scenarioId];
+            if (!scenario) return;
+            
+            // Set form values
+            document.getElementById('cancer-type').value = scenario.cancerType;
+            document.getElementById('disease-stage').value = scenario.diseaseStage;
+            
+            // Patient values
+            setSliderValue('age', scenario.age);
+            document.getElementById('smoking-status').value = scenario.smokingStatus;
+            setSliderValue('pack-years', scenario.packYears);
+            
+            // Show/hide pack years based on smoking status
+            const packYearsContainer = document.getElementById('pack-years-container');
+            if (scenario.smokingStatus === 'never') {
+                packYearsContainer.classList.add('d-none');
+            } else {
+                packYearsContainer.classList.remove('d-none');
+            }
+            
+            document.getElementById('performance-status').value = scenario.performanceStatus;
+            
+            // Cell populations
+            setSliderValue('sensitive-cells', scenario.sensitiveCells);
+            setSliderValue('resistant-cells', scenario.resistantCells);
+            setSliderValue('stem-cells', scenario.stemCells);
+            setSliderValue('immune-cells', scenario.immuneCells);
+            
+            // Treatment parameters
+            document.getElementById('treatment-type').value = scenario.treatmentType;
+            
+            // Trigger the filter to update treatment options
+            filterTreatmentOptions();
+            
+            // Set the specific treatment after filtering
+            setTimeout(() => {
+                // This is delayed slightly to ensure the filtering has completed
+                document.getElementById('treatment-option').value = scenario.treatmentOption;
+            }, 50);
+            
+            // Treatment protocol
+            document.getElementById('treatment-protocol').value = scenario.protocol;
+            setSliderValue('drug-strength', scenario.drugStrength);
+            setSliderValue('drug-decay', scenario.drugDecay);
+            setSliderValue('dose-frequency', scenario.doseFrequency);
+        }
+        
+        /**
+         * Toggle logarithmic scale for population chart
+         */
+        function toggleLogScale() {
+            if (!populationChart) return;
+            
+            const isLogarithmic = document.getElementById('log-scale-toggle').checked;
+            
+            populationChart.options.scales.y = {
+                type: isLogarithmic ? 'logarithmic' : 'linear',
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Cell Count'
+                }
+            };
+            
+            populationChart.update();
+        }
+        
+        /**
+         * Reset all parameters to their default values
+         */
+        function resetParameters() {
+            // Reset disease parameters
+            document.getElementById('cancer-type').value = 'NSCLC';
+            document.getElementById('disease-stage').value = '3';
+            
+            // Reset patient factors
+            setSliderValue('age', 65);
+            document.getElementById('smoking-status').value = 'current';
+            setSliderValue('pack-years', 30);
+            document.getElementById('pack-years-container').classList.remove('d-none');
+            document.getElementById('performance-status').value = '1';
+            
+            // Reset cell populations
+            setSliderValue('sensitive-cells', 100);
+            setSliderValue('resistant-cells', 10);
+            setSliderValue('stem-cells', 5);
+            setSliderValue('immune-cells', 50);
+            
+            // Reset treatment parameters
+            document.getElementById('treatment-protocol').value = 'PULSED';
+            setSliderValue('drug-strength', 0.8);
+            setSliderValue('drug-decay', 0.1);
+            setSliderValue('dose-frequency', 7);
+            
+            // Reset clinical scenario selections
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+        }
+        
+        /**
+         * Helper function to set a slider value and update its display
+         */
+        function setSliderValue(sliderId, value) {
+            const slider = document.getElementById(sliderId);
+            if (slider) {
+                slider.value = value;
+                const valueId = sliderId + '-value';
+                const valueDisplay = document.getElementById(valueId);
+                if (valueDisplay) {
+                    // Format with proper decimal places
+                    if (sliderId.includes('drug-')) {
+                        valueDisplay.textContent = parseFloat(value).toFixed(2);
+                    } else {
+                        valueDisplay.textContent = value;
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Set up all slider input handlers to update displayed values
+         */
+        function setupSliderListeners() {
+            setupSlider('sensitive-cells', 'sensitive-value');
+            setupSlider('resistant-cells', 'resistant-value');
+            setupSlider('stem-cells', 'stem-value');
+            setupSlider('immune-cells', 'immune-value');
+            setupSlider('drug-strength', 'drug-strength-value', 2);
+            setupSlider('drug-decay', 'drug-decay-value', 2);
+            setupSlider('dose-frequency', 'dose-frequency-value');
+            setupSlider('age', 'age-value');
+            setupSlider('pack-years', 'pack-years-value');
+        }
+        
+        /**
+         * Set up a single slider with its value display
+         */
+        function setupSlider(sliderId, valueId, decimals = 0) {
+            const slider = document.getElementById(sliderId);
+            const valueDisplay = document.getElementById(valueId);
+            
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', function() {
+                    if (decimals > 0) {
+                        valueDisplay.textContent = parseFloat(this.value).toFixed(decimals);
+                    } else {
+                        valueDisplay.textContent = this.value;
+                    }
+                });
+            }
+        }
+        
+        /**
+         * Initialize all charts with empty data
+         */
+        function initializeCharts() {
+            // Population Chart
+            const popCtx = document.getElementById('population-chart');
+            if (popCtx) {
+                populationChart = new Chart(popCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [
+                            {
+                                label: 'Sensitive Tumor Cells',
+                                data: Array.from({length: 100}, () => 0),
+                                borderColor: 'rgba(52, 152, 219, 0.8)',
+                                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Resistant Clone Cells',
+                                data: Array.from({length: 100}, () => 0),
+                                borderColor: 'rgba(231, 76, 60, 0.8)',
+                                backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Cancer Stem-like Cells',
+                                data: Array.from({length: 100}, () => 0),
+                                borderColor: 'rgba(243, 156, 18, 0.8)',
+                                backgroundColor: 'rgba(243, 156, 18, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cell Count'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Drug Level Chart
+            const drugCtx = document.getElementById('drug-level-chart');
+            if (drugCtx) {
+                drugLevelChart = new Chart(drugCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [
+                            {
+                                label: 'Drug Concentration',
+                                data: Array.from({length: 100}, () => 0),
+                                borderColor: 'rgba(46, 204, 113, 0.8)',
+                                backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1.0,
+                                title: {
+                                    display: true,
+                                    text: 'Concentration'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        /**
+         * Filter treatment options based on treatment type
+         */
+        function filterTreatmentOptions() {
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOptionSelect = document.getElementById('treatment-option');
+            const options = treatmentOptionSelect.querySelectorAll('option');
+            
+            // Hide all options first
+            options.forEach(option => {
+                option.style.display = 'none';
+            });
+            
+            // Show only options matching the selected type
+            const matchingOptions = treatmentOptionSelect.querySelectorAll(`option[data-type="${treatmentType}"]`);
+            matchingOptions.forEach(option => {
+                option.style.display = '';
+            });
+            
+            // Select the first visible option
+            if (matchingOptions.length > 0) {
+                matchingOptions[0].selected = true;
+            }
+            
+            // Show/hide treatment info cards based on selection
+            document.querySelectorAll('.treatment-info').forEach(card => {
+                card.classList.add('d-none');
+            });
+            
+            // Show the selected treatment info card
+            const selectedInfoCard = document.getElementById(`${treatmentType}-info`);
+            if (selectedInfoCard) {
+                selectedInfoCard.classList.remove('d-none');
+            }
+        }
+        
+        /**
+         * Run the simulation with current parameters
+         */
+        function runSimulation() {
+            console.log("Running simulation...");
+            
+            // Show spinner, hide results
+            document.getElementById('spinner-container').classList.remove('d-none');
+            document.getElementById('results-container').classList.add('d-none');
+            
+            // Collect parameters
+            const cancerType = document.getElementById('cancer-type').value;
+            const diseaseStage = parseInt(document.getElementById('disease-stage').value) || 3;
+            const age = parseInt(document.getElementById('age').value) || 65;
+            const smokingStatus = document.getElementById('smoking-status').value;
+            const packYears = parseInt(document.getElementById('pack-years').value) || 0;
+            const performanceStatus = parseInt(document.getElementById('performance-status').value) || 1;
+            
+            // Get treatment details
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOption = document.getElementById('treatment-option').value;
+            
+            const parameters = {
+                // Patient and disease factors
+                cancer_type: cancerType,
+                disease_stage: diseaseStage,
+                age: age,
+                smoking_status: smokingStatus,
+                pack_years: packYears,
+                performance_status: performanceStatus,
+                
+                // Cell populations
+                sensitive_cells: parseInt(document.getElementById('sensitive-cells').value) || 100,
+                resistant_cells: parseInt(document.getElementById('resistant-cells').value) || 10,
+                stem_cells: parseInt(document.getElementById('stem-cells').value) || 5,
+                immune_cells: parseInt(document.getElementById('immune-cells').value) || 50,
+                
+                // Treatment parameters
+                treatment_type: treatmentType,
+                treatment_option: treatmentOption,
+                treatment_protocol: document.getElementById('treatment-protocol').value,
+                drug_strength: parseFloat(document.getElementById('drug-strength').value) || 0.8,
+                drug_decay: parseFloat(document.getElementById('drug-decay').value) || 0.1,
+                dose_frequency: parseInt(document.getElementById('dose-frequency').value) || 7,
+                time_steps: 100
+            };
+            
+            // Send to server
+            fetch('/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(parameters)
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log("Simulation complete", data);
+                
+                // Update charts
+                updateCharts(data.simulation_data);
+                
+                // Display results
+                displayResults(data.clinical_summary);
+                
+                // Hide spinner, show results
+                document.getElementById('spinner-container').classList.add('d-none');
+                document.getElementById('results-container').classList.remove('d-none');
+            })
+            .catch(function(error) {
+                console.error('Simulation error:', error);
+                
+                // Show error message
+                document.getElementById('spinner-container').classList.add('d-none');
+                document.getElementById('results-container').classList.remove('d-none');
+                document.getElementById('results-container').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5>Simulation Error</h5>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+        
+        /**
+         * Update charts with new simulation data
+         */
+        function updateCharts(simData) {
+            if (!simData) return;
+            
+            // Extract data arrays
+            const timePoints = Array.from({length: 100}, (_, i) => i);
+            const sensitiveData = simData.sensitive || [];
+            const resistantData = simData.resistant || [];
+            const stemcellData = simData.stemcell || [];
+            const drugLevelData = simData.drug_level || [];
+            
+            // Normalize data length
+            const truncateToLength = (arr, length) => arr.slice(0, length);
+            
+            // Update population chart
+            if (populationChart) {
+                populationChart.data.labels = timePoints;
+                populationChart.data.datasets[0].data = truncateToLength(sensitiveData, 100);
+                populationChart.data.datasets[1].data = truncateToLength(resistantData, 100);
+                populationChart.data.datasets[2].data = truncateToLength(stemcellData, 100);
+                populationChart.update();
+            }
+            
+            // Update drug level chart
+            if (drugLevelChart) {
+                drugLevelChart.data.labels = timePoints;
+                drugLevelChart.data.datasets[0].data = truncateToLength(drugLevelData, 100);
+                drugLevelChart.update();
+            }
+            
+            // Apply current time unit if not already days
+            const currentUnit = document.querySelector('input[name="time-unit"]:checked');
+            if (currentUnit && currentUnit.id !== 'time-days') {
+                updateTimeLabels(currentUnit.id.replace('time-', ''));
+            }
+            
+            // Apply log scale if enabled
+            if (document.getElementById('log-scale-toggle').checked) {
+                toggleLogScale();
+            }
+        }
+        
+        /**
+         * Display simulation results and clinical metrics
+         */
+        function displayResults(clinical) {
+            const resultsContainer = document.getElementById('results-container');
+            
+            // Create response display based on whether we have real measurements or just expectations
+            let responseDisplay = "";
+            if (clinical.response_data_source === "Actual Measurements") {
+                responseDisplay = `<p>Tumor Response: <strong>${clinical.treatment_response_rate}%</strong> <span class="badge bg-info">Measured</span></p>`;
+            } else {
+                responseDisplay = `<p>Expected Response: <strong>${clinical.expected_response_range}</strong> <span class="badge bg-secondary">Protocol-based</span></p>`;
+            }
+            
+            // Get cancer type and stage
+            const cancerType = document.getElementById('cancer-type').value;
+            const diseaseStage = document.getElementById('disease-stage').value;
+            const stageName = ['I', 'II', 'III', 'IV'][parseInt(diseaseStage) - 1];
+            
+            // Smoking information
+            const smokingStatus = document.getElementById('smoking-status').value;
+            const packYears = document.getElementById('pack-years').value;
+            let smokingInfo = '';
+            
+            if (smokingStatus === 'never') {
+                smokingInfo = 'Never smoker';
+            } else if (smokingStatus === 'former') {
+                smokingInfo = `Former smoker (${packYears} pack-years)`;
+            } else {
+                smokingInfo = `Current smoker (${packYears} pack-years)`;
+            }
+            
+            // Get treatment information
+            const treatmentType = document.getElementById('treatment-type').value;
+            const treatmentOption = document.getElementById('treatment-option');
+            const selectedOption = treatmentOption.options[treatmentOption.selectedIndex];
+            const treatmentName = selectedOption ? selectedOption.text : "Unknown";
+            const protocolSelect = document.getElementById('treatment-protocol');
+            const protocolName = protocolSelect.options[protocolSelect.selectedIndex].text;
+            
+            // Updated results HTML with optimistic clinical metrics
+            resultsContainer.innerHTML = `
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">${cancerType} Stage ${stageName} - Simulation Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <strong>Patient:</strong> ${document.getElementById('age').value} years, ${smokingInfo}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Performance Status:</strong> ECOG ${document.getElementById('performance-status').value}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Protocol:</strong> ${protocolName}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong>Treatment:</strong> ${treatmentName}
+                                <span class="badge bg-${getTreatmentBadgeColor(treatmentType)}">${capitalizeFirstLetter(treatmentType)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-${clinical.disease_control_rate > 50 ? 'success' : 'warning'}">
+                            <h5 class="mb-2">Clinical Response: ${clinical.clinical_response}</h5>
+                            <p class="mb-0">This simulation suggests ${clinical.disease_control_rate > 75 ? "good" : clinical.disease_control_rate > 40 ? "moderate" : "limited"} disease control with ${treatmentName}.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Treatment Results</h5>
+                            </div>
+                            <div class="card-body">
+                                ${responseDisplay}
+                                <p>Disease Control Rate: <strong>${clinical.disease_control_rate.toFixed(1)}%</strong></p>
+                                <p>Clinical Benefit: <strong>${clinical.clinical_benefit}</strong></p>
+                                <p>Treatment-Free Interval: <strong>${clinical.treatment_free_interval} months</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Quality Metrics</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Treatment Efficacy: <strong>${clinical.treatment_efficacy_score.toFixed(1)}/10</strong></p>
+                                <p>Quality of Life: <strong>${clinical.quality_of_life}</strong></p>
+                                <p>Side Effects: <strong>${clinical.side_effect_profile}</strong></p>
+                                ${getTreatmentSpecificOutcomes(treatmentType, treatmentName, clinical)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus)}
+            `;
+        }
+        
+        /**
+         * Get color for treatment type badge
+         */
+        function getTreatmentBadgeColor(treatmentType) {
+            switch(treatmentType) {
+                case 'chemotherapy': return 'secondary';
+                case 'targeted': return 'info';
+                case 'immunotherapy': return 'success';
+                case 'chemoimmuno': return 'primary';
+                case 'radiation': return 'warning';
+                default: return 'dark';
+            }
+        }
+        
+        /**
+         * Capitalize first letter of a string
+         */
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        
+        /**
+         * Get treatment-specific outcome information
+         */
+        function getTreatmentSpecificOutcomes(treatmentType, treatmentName, clinical) {
+            switch(treatmentType) {
+                case 'chemotherapy':
+                    return `<p>Myelosuppression Risk: <strong>Moderate</strong></p>`;
+                case 'targeted':
+                    if (treatmentName.includes('EGFR')) {
+                        return `<p>Rash Management: <strong>Topical steroids recommended</strong></p>`;
+                    } else if (treatmentName.includes('ALK')) {
+                        return `<p>CNS Penetration: <strong>Excellent</strong></p>`;
+                    }
+                    return `<p>Target Specificity: <strong>High</strong></p>`;
+                case 'immunotherapy':
+                    return `<p>Immune-related AEs: <strong>Monitor thyroid function</strong></p>`;
+                case 'chemoimmuno':
+                    return `<p>Synergistic Effect: <strong>Positive</strong></p>`;
+                case 'radiation':
+                    return `<p>Pneumonitis Risk: <strong>Low to moderate</strong></p>`;
+                default:
+                    return '';
+            }
+        }
+        
+        /**
+         * Generate treatment recommendations based on simulation results
+         */
+        function getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus) {
+            const diseaseControlRate = clinical.disease_control_rate;
+            
+            // Create specific recommendation based on results
+            let recommendationText = '';
+            let recommendationClass = 'info';
+            
+            if (diseaseControlRate > 75) {
+                recommendationText = `<p>Continue ${treatmentName} with current dosing protocol.</p>`;
+                recommendationClass = 'success';
+            } else if (diseaseControlRate > 40) {
+                if (treatmentType === 'chemotherapy') {
+                    recommendationText = `<p>Consider adding maintenance therapy following initial response.</p>`;
+                } else if (treatmentType === 'targeted') {
+                    recommendationText = `<p>Monitor for resistance mutations and consider next-generation inhibitors if progression occurs.</p>`;
+                } else if (treatmentType === 'immunotherapy') {
+                    recommendationText = `<p>Continue treatment beyond initial progression if clinical benefit persists.</p>`;
+                }
+            } else {
+                recommendationText = `<p>Consider alternative therapy or clinical trial eligibility.</p>`;
+                recommendationClass = 'warning';
+            }
+            
+            // Add molecular testing recommendations
+            let testingRecommendation = '';
+            if (cancerType === 'NSCLC' && treatmentType !== 'targeted' && smokingStatus === 'never') {
+                testingRecommendation = `<p>Recommend comprehensive genomic profiling to identify targetable alterations (EGFR, ALK, ROS1, RET, NTRK).</p>`;
+            } else if (cancerType === 'NSCLC' && treatmentType !== 'immunotherapy') {
+                testingRecommendation = `<p>Consider PD-L1 testing to assess immunotherapy eligibility.</p>`;
+            }
+            
+            return `
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-${recommendationClass} text-white">
+                    <h5 class="mb-0">Clinical Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    ${recommendationText}
+                    ${testingRecommendation}
+                    <p>Follow-up imaging recommended in ${clinical.treatment_free_interval < 3 ? '6 weeks' : '8-12 weeks'}.</p>
+                </div>
+            </div>`;
+        }
+    </script>
+</body>
+</html>

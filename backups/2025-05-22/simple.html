@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Lung Cancer Simulator</title>
+    
+    <!-- Bootstrap CSS (Replit Dark Theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <style>
+        .container { max-width: 800px; margin-top: 50px; }
+        .spinner-border { width: 3rem; height: 3rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Lung Cancer Simulator - Simple Version</h1>
+        <p class="lead">Basic simulation for testing purposes</p>
+
+        <form id="simple-form" class="mb-4">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Sensitive Tumor Cells</label>
+                    <input type="number" class="form-control" id="sensitive-cells" value="100">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Resistant Tumor Cells</label>
+                    <input type="number" class="form-control" id="resistant-cells" value="10">
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Treatment Protocol</label>
+                    <select class="form-select" id="treatment-protocol">
+                        <option value="CONTINUOUS">Continuous</option>
+                        <option value="PULSED" selected>Pulsed</option>
+                        <option value="METRONOMIC">Metronomic</option>
+                        <option value="ADAPTIVE">Adaptive</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Drug Strength</label>
+                    <input type="number" class="form-control" id="drug-strength" value="0.8" step="0.1">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg" id="run-btn">Run Simulation</button>
+        </form>
+        
+        <div id="loading" class="text-center d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Running simulation...</p>
+        </div>
+        
+        <div id="results" class="mt-4 d-none">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Simulation Results</h5>
+                </div>
+                <div class="card-body" id="results-content">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('simple-form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                runSimulation();
+            });
+        });
+        
+        function runSimulation() {
+            console.log('Running simulation...');
+            
+            // Show loading, hide results
+            document.getElementById('loading').classList.remove('d-none');
+            document.getElementById('results').classList.add('d-none');
+            
+            // Get parameters
+            const parameters = {
+                sensitive_cells: parseInt(document.getElementById('sensitive-cells').value) || 100,
+                resistant_cells: parseInt(document.getElementById('resistant-cells').value) || 10,
+                stem_cells: 5,
+                immune_cells: 50,
+                treatment_protocol: document.getElementById('treatment-protocol').value,
+                drug_strength: parseFloat(document.getElementById('drug-strength').value) || 0.8,
+                drug_decay: 0.1,
+                dose_frequency: 7,
+                patient_age: 55,
+                disease_stage: 3,
+                time_steps: 100
+            };
+            
+            // Send request to server
+            fetch('/simulate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(parameters)
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Simulation data received:', data);
+                
+                // Hide loading, show results
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('results').classList.remove('d-none');
+                
+                // Display results
+                let resultsHtml = '<h4>Simulation Completed Successfully</h4>';
+                
+                if (data.clinical_summary) {
+                    const cs = data.clinical_summary;
+                    resultsHtml += `
+                        <p>Response Rate: <strong>${cs.treatment_response_rate || 0}%</strong></p>
+                        <p>Disease Control: <strong>${cs.disease_control_rate || 0}%</strong></p>
+                        <p>Quality of Life: <strong>${cs.quality_of_life || 'Good'}</strong></p>
+                    `;
+                }
+                
+                document.getElementById('results-content').innerHTML = resultsHtml;
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                
+                // Hide loading, show results with error
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('results').classList.remove('d-none');
+                
+                document.getElementById('results-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>Simulation Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
