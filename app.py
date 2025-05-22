@@ -2,6 +2,7 @@ import os
 import logging
 from flask import Flask, render_template, request, jsonify
 from simulation import CancerSimulation, TreatmentProtocol
+from verification import MathematicalVerification
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -92,6 +93,21 @@ def simulate():
         sim = CancerSimulation(initial_cells, parameters)
         results = sim.run_simulation()
         clinical_summary = sim.get_summary()
+        
+        # Perform mathematical verification
+        verification_results = MathematicalVerification.verify_all_calculations(sim)
+        
+        # Log verification results
+        if verification_results['overall_valid']:
+            logger.info("Mathematical verification passed for all calculations")
+        else:
+            logger.warning("Mathematical verification failed for one or more calculations")
+            for calc_type, result in verification_results.items():
+                if calc_type != 'overall_valid' and isinstance(result, dict) and 'valid' in result and not result['valid']:
+                    logger.warning(f"Verification failed for {calc_type}: difference={result.get('difference', result.get('max_difference', 'N/A'))}")
+        
+        # Add verification status to clinical summary
+        clinical_summary['calculation_verification'] = verification_results['overall_valid']
         
         # Handle JSON serialization for special objects like enums
         def make_json_serializable(obj):

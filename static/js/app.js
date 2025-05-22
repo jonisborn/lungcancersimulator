@@ -583,6 +583,7 @@ function updateClinicalOutcomes(clinical) {
     const responseDataSource = clinical.response_data_source || "Expected Outcomes";
     const expectedResponseRange = clinical.expected_response_range || "";
     const treatmentFreeInterval = clinical.treatment_free_interval || 0;
+    const calculationVerified = clinical.calculation_verification || false;
     
     // Get results container
     const resultsContainer = document.getElementById('results-container');
