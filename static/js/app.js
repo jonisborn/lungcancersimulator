@@ -601,8 +601,9 @@ function updateClinicalOutcomes(clinical) {
             <div class="row">
                 <div class="col-md-6">
                     <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Treatment Results</h5>
+                            ${calculationVerified ? '<span class="badge bg-light text-dark"><i class="bi bi-check-circle-fill text-success"></i> Verified</span>' : ''}
                         </div>
                         <div class="card-body">
                             ${responseDisplay}
