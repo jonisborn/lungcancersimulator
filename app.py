@@ -1,5 +1,6 @@
 import os
 import logging
+import numpy as np
 from flask import Flask, render_template, request, jsonify
 from simulation import CancerSimulation, TreatmentProtocol
 from verification import MathematicalVerification
@@ -107,8 +108,26 @@ def simulate():
                     logger.warning(f"Verification failed for {calc_type}: difference={result.get('difference', result.get('max_difference', 'N/A'))}")
         
         # Add verification status to clinical summary
+        # Make sure we can serialize all the data properly
+        cleaned_verification = {}
+        for key, value in verification_results.items():
+            if key == 'overall_valid':
+                cleaned_verification[key] = value
+            elif isinstance(value, dict):
+                cleaned_item = {}
+                for k, v in value.items():
+                    if k in ['valid', 'difference', 'max_difference']:
+                        cleaned_item[k] = v
+                    elif k in ['original', 'verification'] and isinstance(v, np.ndarray):
+                        # Convert numpy arrays to lists for JSON serialization
+                        cleaned_item[k] = v.tolist() if hasattr(v, 'tolist') else str(v)
+                    else:
+                        # Convert other types to strings if they're not simple types
+                        cleaned_item[k] = v if isinstance(v, (int, float, bool, str, list, dict)) else str(v)
+                cleaned_verification[key] = cleaned_item
+        
         clinical_summary['calculation_verification'] = verification_results['overall_valid']
-        clinical_summary['verification_data'] = verification_results
+        clinical_summary['verification_data'] = cleaned_verification
         
         # Handle JSON serialization for special objects like enums
         def make_json_serializable(obj):

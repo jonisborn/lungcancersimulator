@@ -670,6 +670,7 @@ function updateVerificationStatus(clinical) {
     
     // Store verification data globally to access from the verification tab
     window.lastVerificationData = clinical;
+    console.log("Updating verification status with:", clinical);
     
     // Get verification card elements
     const statusCard = document.getElementById('verification-status-card');
@@ -677,19 +678,39 @@ function updateVerificationStatus(clinical) {
     const detailsDiv = document.getElementById('verification-details');
     const tableBody = document.getElementById('verification-table-body');
     
-    if (!statusCard || !statusBody || !detailsDiv || !tableBody) return;
+    // Skip if any element is missing (might not be fully loaded yet)
+    if (!statusCard || !statusBody || !detailsDiv || !tableBody) {
+        console.warn("Verification elements not found, verification tab might not be loaded yet");
+        return;
+    }
     
-    // Update card header style based on verification status
-    statusCard.querySelector('.card-header').className = 
-        isVerified ? 'card-header bg-success text-white' : 'card-header bg-warning text-white';
-    
-    // Update card header text based on verification status
-    statusCard.querySelector('.card-header h5').textContent = 
-        isVerified ? 'Verification Successful' : 'Verification Issues Detected';
-    
-    // Show verification details
-    document.querySelector('#verification-status-body > div.text-center').classList.add('d-none');
-    detailsDiv.classList.remove('d-none');
+    try {
+        // Update card header style based on verification status
+        const cardHeader = statusCard.querySelector('.card-header');
+        if (cardHeader) {
+            cardHeader.className = isVerified ? 
+                'card-header bg-success text-white' : 
+                'card-header bg-warning text-white';
+        
+            // Update card header text based on verification status
+            const headerTitle = cardHeader.querySelector('h5');
+            if (headerTitle) {
+                headerTitle.textContent = isVerified ? 
+                    'Verification Successful' : 
+                    'Verification Issues Detected';
+            }
+        }
+        
+        // Show verification details
+        const placeholderDiv = document.querySelector('#verification-status-body > div.text-center');
+        if (placeholderDiv) {
+            placeholderDiv.classList.add('d-none');
+        }
+        
+        detailsDiv.classList.remove('d-none');
+    } catch (error) {
+        console.error("Error updating verification card:", error);
+    }
     
     // Clear previous entries
     tableBody.innerHTML = '';
