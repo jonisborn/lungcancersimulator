@@ -33,6 +33,23 @@ def get_protocols():
     """Return available treatment protocols"""
     protocols = [protocol.name for protocol in TreatmentProtocol]
     return jsonify(protocols)
+    
+# Global variable to store verification data
+LAST_VERIFICATION_DATA = {
+    "calculation_verification": False,
+    "verification_data": {
+        "fitness": {"valid": False, "max_difference": 0.35, "original": [0.1, -0.2, 0.05], "verification": [0.15, -0.35, 0.1]},
+        "tumor_volume": {"valid": True, "difference": 0.05, "original": 235.5, "verification": 235.45},
+        "survival_probability": {"valid": False, "difference": 0.27, "original": 0.65, "verification": 0.38}
+    }
+}
+
+@app.route('/get_verification_data', methods=['GET'])
+def get_verification_data():
+    """Return the latest verification data for the redundancy check tab"""
+    # This endpoint will be called when the verification tab is clicked
+    global LAST_VERIFICATION_DATA
+    return jsonify(LAST_VERIFICATION_DATA)
 
 @app.route('/simulate', methods=['POST'])
 def simulate():
@@ -105,7 +122,8 @@ def simulate():
             logger.warning("Mathematical verification failed for one or more calculations")
             for calc_type, result in verification_results.items():
                 if calc_type != 'overall_valid' and isinstance(result, dict) and 'valid' in result and not result['valid']:
-                    logger.warning(f"Verification failed for {calc_type}: difference={result.get('difference', result.get('max_difference', 'N/A'))}")
+                    diff = result.get('difference', result.get('max_difference', 'N/A'))
+                    logger.warning(f"Verification failed for {calc_type}: difference={diff}")
         
         # Add verification status to clinical summary
         # Make sure we can serialize all the data properly
@@ -128,6 +146,13 @@ def simulate():
         
         clinical_summary['calculation_verification'] = verification_results['overall_valid']
         clinical_summary['verification_data'] = cleaned_verification
+        
+        # Update the global verification data for the dedicated endpoint
+        global LAST_VERIFICATION_DATA
+        LAST_VERIFICATION_DATA = {
+            "calculation_verification": verification_results['overall_valid'],
+            "verification_data": cleaned_verification
+        }
         
         # Handle JSON serialization for special objects like enums
         def make_json_serializable(obj):

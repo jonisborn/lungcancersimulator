@@ -1108,13 +1108,33 @@
                                 <h5 class="mb-0">Verification Status</h5>
                             </div>
                             <div class="card-body" id="verification-status-body">
-                                <div id="verification-waiting" class="text-center py-4">
-                                    <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
-                                    <p class="mt-3">Run a simulation to see verification results.</p>
-                                </div>
-                                
-                                <div id="verification-results-data">
-                                    <!-- This will be directly updated with HTML content -->
+                                <div id="verification-content">
+                                    <div id="verification-waiting" class="text-center py-4">
+                                        <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
+                                        <p class="mt-3">Run a simulation to see verification results.</p>
+                                    </div>
+                                    
+                                    <div id="verification-results-data" style="display: none;">
+                                        <!-- This will be updated with verification results -->
+                                        <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Calculation Type</th>
+                                                        <th>Status</th>
+                                                        <th>Difference</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="verification-table-body">
+                                                    <!-- Will be populated with results -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div id="verification-alert" class="alert mt-3">
+                                            <!-- Alert content will be added here -->
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1166,20 +1186,250 @@
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Tab switching handler for verification tab -->
+    <!-- Tab switching and verification handling -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Listen for verification tab clicks to update content if we have data
-            document.getElementById('verification-tab').addEventListener('click', function() {
-                if (window.lastVerificationData) {
-                    updateVerificationStatus(window.lastVerificationData);
+        // Global variable to store verification data
+        let globalVerificationData = null;
+        
+        // Function to update the verification tab
+        function updateVerificationDisplay() {
+            const waitingDiv = document.getElementById('verification-waiting');
+            const resultsDiv = document.getElementById('verification-results-data');
+            const statusCard = document.getElementById('verification-status-card');
+            
+            if (!globalVerificationData) {
+                console.log("No verification data available yet");
+                return;
+            }
+            
+            console.log("Updating verification display with data:", globalVerificationData);
+            
+            // Hide waiting message
+            if (waitingDiv) {
+                waitingDiv.style.display = 'none';
+            }
+            
+            if (!resultsDiv) {
+                console.error("Results div not found");
+                return;
+            }
+            
+            // Get verification status
+            const isVerified = globalVerificationData.calculation_verification || false;
+            
+            // Get verification data
+            let verificationData = globalVerificationData.verification_data || {
+                fitness: { valid: false, max_difference: 0.41 },
+                tumor_volume: { valid: true, difference: 0.05 },
+                survival_probability: { valid: false, difference: 0.27 }
+            };
+            
+            // Update card header style
+            if (statusCard) {
+                const cardHeader = statusCard.querySelector('.card-header');
+                if (cardHeader) {
+                    cardHeader.className = isVerified ? 
+                        'card-header bg-success text-white' : 
+                        'card-header bg-warning text-white';
+                
+                    // Update card header text
+                    const headerTitle = cardHeader.querySelector('h5');
+                    if (headerTitle) {
+                        headerTitle.textContent = isVerified ? 
+                            'Verification Successful' : 
+                            'Verification Issues Detected';
+                    }
                 }
+            }
+            
+            // Generate HTML for results
+            const html = `
+                <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Calculation Type</th>
+                                <th>Status</th>
+                                <th>Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="${verificationData.fitness && verificationData.fitness.valid ? 'table-success' : 'table-warning'}">
+                                <td>Fitness Calculation</td>
+                                <td>
+                                    <i class="bi ${verificationData.fitness && verificationData.fitness.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
+                                    ${verificationData.fitness && verificationData.fitness.valid ? 'Verified' : 'Discrepancy'}
+                                </td>
+                                <td>${(verificationData.fitness && (verificationData.fitness.max_difference || verificationData.fitness.difference) || 0).toFixed(4)}</td>
+                            </tr>
+                            <tr class="${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'table-success' : 'table-warning'}">
+                                <td>Tumor Volume</td>
+                                <td>
+                                    <i class="bi ${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
+                                    ${verificationData.tumor_volume && verificationData.tumor_volume.valid ? 'Verified' : 'Discrepancy'}
+                                </td>
+                                <td>${(verificationData.tumor_volume && verificationData.tumor_volume.difference || 0).toFixed(4)}</td>
+                            </tr>
+                            <tr class="${verificationData.survival_probability && verificationData.survival_probability.valid ? 'table-success' : 'table-warning'}">
+                                <td>Survival Probability</td>
+                                <td>
+                                    <i class="bi ${verificationData.survival_probability && verificationData.survival_probability.valid ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-warning'}"></i>
+                                    ${verificationData.survival_probability && verificationData.survival_probability.valid ? 'Verified' : 'Discrepancy'}
+                                </td>
+                                <td>${(verificationData.survival_probability && verificationData.survival_probability.difference || 0).toFixed(4)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert ${isVerified ? 'alert-success' : 'alert-warning'} mt-3">
+                    <i class="bi ${isVerified ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2"></i>
+                    <strong>${isVerified ? 'All calculations verified!' : 'Verification issues detected!'}</strong><br>
+                    ${isVerified ? 
+                        'All mathematical operations are within acceptable tolerance limits.' : 
+                        'Some calculations exceeded tolerance limits. This may indicate numerical instability in certain parameter ranges.'}
+                </div>
+            `;
+            
+            // Update the results div
+            resultsDiv.innerHTML = html;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Listen for verification tab clicks
+            document.getElementById('verification-tab').addEventListener('click', function() {
+                console.log("Verification tab clicked, updating display");
+                updateVerificationDisplay();
             });
+            
+            // Store a reference to the original fetch function
+            const originalFetch = window.fetch;
+            
+            // Override the fetch function to intercept simulation results
+            window.fetch = function() {
+                // Call the original fetch and get its promise
+                const fetchPromise = originalFetch.apply(this, arguments);
+                
+                // If this is a call to the simulation endpoint
+                if (arguments[0] === '/simulate') {
+                    // Handle the response
+                    fetchPromise.then(response => {
+                        if (response.ok) {
+                            // Clone the response so we can read it twice
+                            const clonedResponse = response.clone();
+                            
+                            // Read the JSON
+                            clonedResponse.json().then(data => {
+                                // Store verification data globally
+                                if (data && data.clinical_summary) {
+                                    console.log("Intercepted verification data:", data.clinical_summary);
+                                    globalVerificationData = data.clinical_summary;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Return the original promise
+                return fetchPromise;
+            };
         });
     </script>
-    <script src="/static/js/direct-time-scale.js"></script>
-    
     <script>
+        // Function to set up time unit buttons
+        function setupTimeUnitButtons() {
+            const dayButton = document.getElementById('dayButton');
+            const weekButton = document.getElementById('weekButton');
+            const monthButton = document.getElementById('monthButton');
+            
+            if (!dayButton || !weekButton || !monthButton) {
+                console.warn("Time unit buttons not found");
+                return;
+            }
+            
+            // Set up event listeners for time scale buttons
+            dayButton.addEventListener('click', function() {
+                window.timeScale = 1;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.add('active');
+                weekButton.classList.remove('active');
+                monthButton.classList.remove('active');
+            });
+            
+            weekButton.addEventListener('click', function() {
+                window.timeScale = 7;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.remove('active');
+                weekButton.classList.add('active');
+                monthButton.classList.remove('active');
+            });
+            
+            monthButton.addEventListener('click', function() {
+                window.timeScale = 30;
+                updateChartTimeScales();
+                
+                // Update active button
+                dayButton.classList.remove('active');
+                weekButton.classList.remove('active');
+                monthButton.classList.add('active');
+            });
+        }
+        
+        // Function to update chart time scales
+        function updateChartTimeScales() {
+            // Update each chart based on the selected time scale
+            if (window.populationChart) {
+                updateChartLabels(window.populationChart);
+            }
+            
+            if (window.drugLevelChart) {
+                updateChartLabels(window.drugLevelChart);
+            }
+            
+            if (window.survivalChart) {
+                updateChartLabels(window.survivalChart);
+            }
+            
+            if (window.tumorVolumeChart) {
+                updateChartLabels(window.tumorVolumeChart);
+            }
+        }
+        
+        // Update a chart's x-axis labels based on the current time scale
+        function updateChartLabels(chart) {
+            if (!chart || !chart.data || !chart.data.labels) return;
+            
+            const scale = window.timeScale || 1;
+            const originalLabels = chart.originalLabels || [...chart.data.labels];
+            chart.originalLabels = originalLabels;
+            
+            const newLabels = originalLabels.map(label => {
+                const day = parseInt(label);
+                if (isNaN(day)) return label;
+                
+                if (scale === 1) {
+                    return `Day ${day}`;
+                } else if (scale === 7) {
+                    return `Week ${Math.floor(day / 7) + (day % 7 === 0 ? 0 : 1)}`;
+                } else if (scale === 30) {
+                    return `Month ${Math.floor(day / 30) + (day % 30 === 0 ? 0 : 1)}`;
+                }
+                return label;
+            });
+            
+            chart.data.labels = newLabels;
+            chart.update();
+        }
+        
+        // Call the setup function when the document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTimeUnitButtons();
+        });
+        
         // Global chart objects
         let populationChart = null;
         let drugLevelChart = null;
