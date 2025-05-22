@@ -87,7 +87,7 @@
             <div class="badge bg-info text-white mb-2">For Research and Educational Purposes Only</div>
         </header>
 
-        <!-- Nav tabs for Simulation, Scenarios, and Help -->
+        <!-- Nav tabs for Simulation, Scenarios, Biomarkers, and Verification -->
         <ul class="nav nav-tabs mb-4" id="main-tabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="simulation-tab" data-bs-toggle="tab" data-bs-target="#simulation-pane" type="button" role="tab">
@@ -102,6 +102,11 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="biomarkers-tab" data-bs-toggle="tab" data-bs-target="#biomarkers-pane" type="button" role="tab">
                     <i class="bi bi-fingerprint"></i> Biomarkers
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="verification-tab" data-bs-toggle="tab" data-bs-target="#verification-pane" type="button" role="tab">
+                    <i class="bi bi-shield-check"></i> Redundancy Check
                 </button>
             </li>
         </ul>
@@ -1049,6 +1054,121 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Redundancy Check Tab -->
+            <div class="tab-pane fade" id="verification-pane" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i><strong>Mathematical Verification System</strong>: Ensuring clinical reliability through redundant calculation methods.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Verification System Architecture</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-3 text-muted">How Redundancy Checks Work</h6>
+                                <p>Critical calculations in our cancer simulation are performed using <strong>two independent mathematical methods</strong>:</p>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item">
+                                        <strong>Primary Method</strong>: Evolutionary game theory with differential equations
+                                    </li>
+                                    <li class="list-group-item">
+                                        <strong>Redundant Method</strong>: Alternative analytical approach with empirical models
+                                    </li>
+                                </ul>
+                                <p>Results from both methods are compared to ensure consistency and reliability. If the results disagree beyond acceptable tolerance, the system flags potential calculation errors.</p>
+                                
+                                <div class="alert alert-secondary mt-3">
+                                    <p class="mb-0"><strong>Tolerance Thresholds:</strong></p>
+                                    <ul class="mb-0">
+                                        <li>Fitness Calculations: 1% or 0.01 absolute difference</li>
+                                        <li>Tumor Volume: 1% or 0.1 cubic mm</li>
+                                        <li>Survival Probability: 5% absolute maximum variance</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100" id="verification-status-card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Verification Status</h5>
+                            </div>
+                            <div class="card-body" id="verification-status-body">
+                                <div class="text-center py-4">
+                                    <i class="bi bi-arrow-clockwise fs-1 text-muted"></i>
+                                    <p class="mt-3">Run a simulation to see verification results.</p>
+                                </div>
+                                
+                                <div id="verification-details" class="d-none">
+                                    <h6 class="card-subtitle mb-3 text-muted">Last Simulation Results</h6>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Calculation Type</th>
+                                                    <th>Status</th>
+                                                    <th>Difference</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="verification-table-body">
+                                                <!-- Will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Importance of Verification in Clinical Modeling</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Mathematical redundancy in clinical simulations serves multiple critical purposes:</p>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-success">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-shield-check me-2"></i>Reliability</h6>
+                                                <p class="card-text small">Ensures predictions are mathematically sound and free from computational artifacts that could mislead clinical interpretations.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-primary">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-graph-up me-2"></i>Accuracy</h6>
+                                                <p class="card-text small">Confirms that complex evolutionary dynamics are being modeled correctly through independent calculation pathways.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card mb-3 h-100 border-warning">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="bi bi-exclamation-triangle me-2"></i>Safety</h6>
+                                                <p class="card-text small">Prevents erroneous treatment predictions by flagging inconsistencies before they affect clinical interpretation.</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
