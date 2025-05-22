@@ -36,11 +36,11 @@ def get_protocols():
     
 # Global variable to store verification data
 LAST_VERIFICATION_DATA = {
-    "calculation_verification": False,
+    "calculation_verification": "false",
     "verification_data": {
-        "fitness": {"valid": False, "max_difference": 0.35, "original": [0.1, -0.2, 0.05], "verification": [0.15, -0.35, 0.1]},
-        "tumor_volume": {"valid": True, "difference": 0.05, "original": 235.5, "verification": 235.45},
-        "survival_probability": {"valid": False, "difference": 0.27, "original": 0.65, "verification": 0.38}
+        "fitness": {"valid": "false", "max_difference": 0.35, "original": [0.1, -0.2, 0.05], "verification": [0.15, -0.35, 0.1]},
+        "tumor_volume": {"valid": "true", "difference": 0.05, "original": 235.5, "verification": 235.45},
+        "survival_probability": {"valid": "false", "difference": 0.27, "original": 0.65, "verification": 0.38}
     }
 }
 
@@ -150,9 +150,17 @@ def simulate():
         # Update the global verification data for the dedicated endpoint
         global LAST_VERIFICATION_DATA
         LAST_VERIFICATION_DATA = {
-            "calculation_verification": verification_results['overall_valid'],
-            "verification_data": cleaned_verification
+            "calculation_verification": "true" if verification_results['overall_valid'] else "false",
+            "verification_data": {}
         }
+        
+        # Convert boolean values to strings to ensure JSON serialization
+        for key, value in cleaned_verification.items():
+            if key != 'overall_valid':
+                if isinstance(value, dict) and 'valid' in value:
+                    # Convert boolean valid flag to string
+                    value['valid'] = "true" if value['valid'] else "false"
+                LAST_VERIFICATION_DATA["verification_data"][key] = value
         
         # Handle JSON serialization for special objects like enums
         def make_json_serializable(obj):
