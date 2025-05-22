@@ -108,6 +108,7 @@ def simulate():
         
         # Add verification status to clinical summary
         clinical_summary['calculation_verification'] = verification_results['overall_valid']
+        clinical_summary['verification_data'] = verification_results
         
         # Handle JSON serialization for special objects like enums
         def make_json_serializable(obj):
