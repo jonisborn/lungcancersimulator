@@ -595,7 +595,49 @@
                         
                         <!-- Results Container -->
                         <div id="results-container" class="d-none">
-                            <!-- Results will be filled in dynamically -->
+                            <div id="results-summary"></div>
+                            <div class="row g-3 mt-3">
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Clinical Response Over Time</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="clinical-response-chart" height="120"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Progression-Free Survival (PFS)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="pfs-chart" height="120"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Overall Survival (OS)</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="os-chart" height="120"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Tumor Burden Over Time</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="tumor-burden-chart" height="120"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Charts -->
@@ -1420,6 +1462,10 @@
         // Global chart objects
         let populationChart = null;
         let drugLevelChart = null;
+        let clinicalResponseChart = null;
+        let pfsChart = null;
+        let osChart = null;
+        let tumorBurdenChart = null;
         
         // Time scale conversion function
         function setTimeScale(scale) {
@@ -2118,6 +2164,163 @@
                     }
                 });
             }
+            
+            // Clinical Response Chart
+            const clinicalResponseCtx = document.getElementById('clinical-response-chart');
+            if (clinicalResponseCtx) {
+                clinicalResponseChart = new Chart(clinicalResponseCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [{
+                            label: 'Clinical Response',
+                            data: Array.from({length: 100}, () => null),
+                            borderColor: 'rgba(52, 73, 94, 0.8)',
+                            backgroundColor: 'rgba(52, 73, 94, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            stepped: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 3,
+                                ticks: {
+                                    callback: function(value) {
+                                        const map = ['PD', 'SD', 'PR', 'CR'];
+                                        return map[value] || value;
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Response'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // PFS Chart
+            const pfsCtx = document.getElementById('pfs-chart');
+            if (pfsCtx) {
+                pfsChart = new Chart(pfsCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [{
+                            label: 'PFS',
+                            data: Array.from({length: 100}, () => null),
+                            borderColor: 'rgba(41, 128, 185, 0.8)',
+                            backgroundColor: 'rgba(41, 128, 185, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Months'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // OS Chart
+            const osCtx = document.getElementById('os-chart');
+            if (osCtx) {
+                osChart = new Chart(osCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [{
+                            label: 'OS',
+                            data: Array.from({length: 100}, () => null),
+                            borderColor: 'rgba(39, 174, 96, 0.8)',
+                            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Months'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            // Tumor Burden Chart
+            const tumorBurdenCtx = document.getElementById('tumor-burden-chart');
+            if (tumorBurdenCtx) {
+                tumorBurdenChart = new Chart(tumorBurdenCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i),
+                        datasets: [{
+                            label: 'Tumor Burden',
+                            data: Array.from({length: 100}, () => null),
+                            borderColor: 'rgba(155, 89, 182, 0.9)',
+                            backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Total Tumor Cells'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (days)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         }
         
         /**
@@ -2250,6 +2453,9 @@
          */
         function updateCharts(simData) {
             if (!simData) return;
+            // Debug log
+            console.log("updateCharts: clinical_response =", simData.clinical_response);
+            console.log("updateCharts: drug_level =", simData.drug_level);
             
             // Extract data arrays
             const timePoints = Array.from({length: 100}, (_, i) => i);
@@ -2287,32 +2493,63 @@
             if (document.getElementById('log-scale-toggle').checked) {
                 toggleLogScale();
             }
+            
+            // New: Clinical response, PFS, OS
+            const clinicalResponseData = simData.clinical_response || [];
+            const pfsData = simData.pfs || [];
+            const osData = simData.os || [];
+            
+            // Map clinical response categories to numbers for plotting
+            const responseMap = {
+                'Progressive Disease (PD)': 0,
+                'Stable Disease (SD)': 1,
+                'Partial Response (PR)': 2,
+                'Complete Response (CR)': 3
+            };
+            const clinicalResponseNumeric = clinicalResponseData.map(r => responseMap[r] ?? null);
+            
+            if (clinicalResponseChart) {
+                clinicalResponseChart.data.labels = timePoints;
+                clinicalResponseChart.data.datasets[0].data = clinicalResponseNumeric;
+                clinicalResponseChart.update();
+            }
+            if (pfsChart) {
+                pfsChart.data.labels = timePoints;
+                pfsChart.data.datasets[0].data = pfsData;
+                pfsChart.update();
+            }
+            if (osChart) {
+                osChart.data.labels = timePoints;
+                osChart.data.datasets[0].data = osData;
+                osChart.update();
+            }
+            // Tumor Burden
+            const tumorBurdenData = simData.tumor_burden || [];
+            if (tumorBurdenChart) {
+                tumorBurdenChart.data.labels = Array.from({length: tumorBurdenData.length}, (_, i) => i);
+                tumorBurdenChart.data.datasets[0].data = tumorBurdenData;
+                tumorBurdenChart.update();
+            }
         }
         
         /**
          * Display simulation results and clinical metrics
          */
         function displayResults(clinical) {
-            const resultsContainer = document.getElementById('results-container');
-            
-            // Create response display based on whether we have real measurements or just expectations
+            const resultsSummary = document.getElementById('results-summary');
+            // Define all variables needed for the template
             let responseDisplay = "";
             if (clinical.response_data_source === "Actual Measurements") {
                 responseDisplay = `<p>Tumor Response: <strong>${clinical.treatment_response_rate}%</strong> <span class="badge bg-info">Measured</span></p>`;
             } else {
                 responseDisplay = `<p>Expected Response: <strong>${clinical.expected_response_range}</strong> <span class="badge bg-secondary">Protocol-based</span></p>`;
             }
-            
-            // Get cancer type and stage
             const cancerType = document.getElementById('cancer-type').value;
             const diseaseStage = document.getElementById('disease-stage').value;
             const stageName = ['I', 'II', 'III', 'IV'][parseInt(diseaseStage) - 1];
-            
-            // Smoking information
             const smokingStatus = document.getElementById('smoking-status').value;
             const packYears = document.getElementById('pack-years').value;
             let smokingInfo = '';
-            
             if (smokingStatus === 'never') {
                 smokingInfo = 'Never smoker';
             } else if (smokingStatus === 'former') {
@@ -2320,17 +2557,13 @@
             } else {
                 smokingInfo = `Current smoker (${packYears} pack-years)`;
             }
-            
-            // Get treatment information
             const treatmentType = document.getElementById('treatment-type').value;
             const treatmentOption = document.getElementById('treatment-option');
             const selectedOption = treatmentOption.options[treatmentOption.selectedIndex];
             const treatmentName = selectedOption ? selectedOption.text : "Unknown";
             const protocolSelect = document.getElementById('treatment-protocol');
             const protocolName = protocolSelect.options[protocolSelect.selectedIndex].text;
-            
-            // Updated results HTML with optimistic clinical metrics
-            resultsContainer.innerHTML = `
+            resultsSummary.innerHTML = `
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">${cancerType} Stage ${stageName} - Simulation Summary</h5>
@@ -2347,21 +2580,18 @@
                                 <strong>Protocol:</strong> ${protocolName}
                             </div>
                         </div>
-                        
                         <div class="row mb-3">
                             <div class="col-12">
                                 <strong>Treatment:</strong> ${treatmentName}
                                 <span class="badge bg-${getTreatmentBadgeColor(treatmentType)}">${capitalizeFirstLetter(treatmentType)}</span>
                             </div>
                         </div>
-                        
                         <div class="alert alert-${clinical.disease_control_rate > 50 ? 'success' : 'warning'}">
                             <h5 class="mb-2">Clinical Response: ${clinical.clinical_response}</h5>
                             <p class="mb-0">This simulation suggests ${clinical.disease_control_rate > 75 ? "good" : clinical.disease_control_rate > 40 ? "moderate" : "limited"} disease control with ${treatmentName}.</p>
                         </div>
                     </div>
                 </div>
-                
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div class="card shadow-sm h-100">
@@ -2390,14 +2620,11 @@
                         </div>
                     </div>
                 </div>
-                
                 ${getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus)}
             `;
         }
-        
-        /**
-         * Get color for treatment type badge
-         */
+
+        // Place after displayResults
         function getTreatmentBadgeColor(treatmentType) {
             switch(treatmentType) {
                 case 'chemotherapy': return 'secondary';
@@ -2408,17 +2635,11 @@
                 default: return 'dark';
             }
         }
-        
-        /**
-         * Capitalize first letter of a string
-         */
+
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
-        
-        /**
-         * Get treatment-specific outcome information
-         */
+
         function getTreatmentSpecificOutcomes(treatmentType, treatmentName, clinical) {
             switch(treatmentType) {
                 case 'chemotherapy':
@@ -2440,17 +2661,11 @@
                     return '';
             }
         }
-        
-        /**
-         * Generate treatment recommendations based on simulation results
-         */
+
         function getRecommendationBlock(clinical, treatmentType, treatmentName, cancerType, diseaseStage, smokingStatus) {
             const diseaseControlRate = clinical.disease_control_rate;
-            
-            // Create specific recommendation based on results
             let recommendationText = '';
             let recommendationClass = 'info';
-            
             if (diseaseControlRate > 75) {
                 recommendationText = `<p>Continue ${treatmentName} with current dosing protocol.</p>`;
                 recommendationClass = 'success';
@@ -2466,15 +2681,12 @@
                 recommendationText = `<p>Consider alternative therapy or clinical trial eligibility.</p>`;
                 recommendationClass = 'warning';
             }
-            
-            // Add molecular testing recommendations
             let testingRecommendation = '';
             if (cancerType === 'NSCLC' && treatmentType !== 'targeted' && smokingStatus === 'never') {
                 testingRecommendation = `<p>Recommend comprehensive genomic profiling to identify targetable alterations (EGFR, ALK, ROS1, RET, NTRK).</p>`;
             } else if (cancerType === 'NSCLC' && treatmentType !== 'immunotherapy') {
                 testingRecommendation = `<p>Consider PD-L1 testing to assess immunotherapy eligibility.</p>`;
             }
-            
             return `
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-${recommendationClass} text-white">

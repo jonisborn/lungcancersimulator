@@ -2,8 +2,10 @@ import os
 import logging
 import numpy as np
 from flask import Flask, render_template, request, jsonify
-from simulation import CancerSimulation, TreatmentProtocol
+from simulation import TreatmentProtocol
+from cancer_simulation_improved import CancerSimulationImproved
 from verification import MathematicalVerification
+import traceback
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -73,44 +75,57 @@ def simulate():
         except (KeyError, ValueError):
             treatment_protocol = TreatmentProtocol.CONTINUOUS
         
-        # Create enhanced patient profile data with safety checks
-        patient_data = {
-            'age': int(data.get('patient_age', 55)),
-            'weight': int(data.get('patient_weight', 70)),
-            'gender': data.get('patient_gender', 'male'),
-            'performance_status': int(data.get('performance_status', 1)),
-            'metabolism': float(data.get('patient_metabolism', 1.0)), 
-            'immune_status': float(data.get('patient_immune_status', 1.0)),
-            'organ_function': float(data.get('patient_organ_function', 1.0)),
-            'tumor_type': data.get('tumor_type', 'colorectal'),
-            'disease_stage': int(data.get('disease_stage', 3)),
-            'comorbidities': data.get('comorbidities', [])
-        }
+        # Robustly build patient_data
+        patient_data = data.get('patient_data')
+        if not patient_data:
+            patient_data = {
+                'age': int(data.get('age', 55)),
+                'weight': int(data.get('weight', 70)),
+                'gender': data.get('gender', 'male'),
+                'performance_status': int(data.get('performance_status', 1)),
+                'metabolism': float(data.get('metabolism', 1.0)),
+                'immune_status': float(data.get('immune_status', 1.0)),
+                'organ_function': float(data.get('organ_function', 1.0)),
+                'tumor_type': data.get('cancer_type', 'colorectal'),
+                'disease_stage': int(data.get('disease_stage', 3)),
+                'comorbidities': data.get('comorbidities', []),
+                'smoking_status': data.get('smoking_status', 'former'),
+                'pack_years': int(data.get('pack_years', 0)),
+            }
         
-        # Build complete parameters dictionary with safety checks
+        # Build complete parameters dictionary with safety checks and defaults
         parameters = {
-            # Standard simulation parameters
             'drug_strength': float(data.get('drug_strength', 0.8)),
             'drug_decay': float(data.get('drug_decay', 0.1)),
             'mutation_rate': float(data.get('mutation_rate', 0.01)),
             'chaos_level': float(data.get('chaos_level', 0.05)),
             'immune_strength': float(data.get('immune_strength', 0.2)),
             'time_steps': int(data.get('time_steps', 100)),
-            
-            # Advanced parameters
             'dose_frequency': int(data.get('dose_frequency', 7)),
             'dose_intensity': float(data.get('dose_intensity', 1.0)),
-            
-            # Clinical parameters 
             'treatment_protocol': treatment_protocol,
-            'treatment_regimen': data.get('treatment_regimen', 'custom'),
+            'treatment_regimen': data.get('treatment_option', 'custom'),
             'patient_data': patient_data
         }
         
         # Run simulation
-        sim = CancerSimulation(initial_cells, parameters)
-        results = sim.run_simulation()
-        clinical_summary = sim.get_summary()
+        try:
+            logger.debug(f"Initial cells: {initial_cells}")
+            logger.debug(f"Parameters: {parameters}")
+            sim = CancerSimulationImproved(initial_cells, parameters)
+        except Exception as e:
+            logger.error(f"Error during simulation instantiation: {e}\n{traceback.format_exc()}")
+            return jsonify({"error": f"Simulation instantiation failed: {e}"}), 500
+        try:
+            results = sim.run_simulation()
+        except Exception as e:
+            logger.error(f"Error during run_simulation: {e}\n{traceback.format_exc()}")
+            return jsonify({"error": f"run_simulation failed: {e}"}), 500
+        try:
+            clinical_summary = sim.get_summary()
+        except Exception as e:
+            logger.error(f"Error during get_summary: {e}\n{traceback.format_exc()}")
+            return jsonify({"error": f"get_summary failed: {e}"}), 500
         
         # Perform mathematical verification
         verification_results = MathematicalVerification.verify_all_calculations(sim)

@@ -104,7 +104,7 @@ class CancerSimulation:
         self.dose_intensity = parameters.get('dose_intensity', 1.0)  # Relative dose intensity
         
         # Store complete patient_data for reference in other methods
-        self.patient_data = parameters.get('patient', {})
+        self.patient_data = parameters.get('patient_data', {})
         
         # Create the patient profile object
         self.patient = PatientProfile(
