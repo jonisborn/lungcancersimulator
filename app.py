@@ -603,3 +603,7 @@ def generate_optimistic_metrics(clinical_data, input_params):
     metrics['treatment_free_interval'] = round(next_treatment_months, 0)
     
     return metrics
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
